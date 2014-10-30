@@ -1,26 +1,3 @@
-Oct 20, 2014
-Goal:  Find KNNs  -- i.e. the hard part is to find nearest neighbors.
+The mintues of the meeting are present in a google doc:
+https://docs.google.com/document/d/1GV1S1ORbfsonWXHOLm8f550xtIZZBO9owSHJrJf0H5s/edit?usp=sharing
 
-How to find KNN:
-Use Locality-Sensitive Hashing (LSH)
-
-Evaluation:
-1. Performance (in time)
-2. Accuracy
-3. Energy usage
-
-What is new about our research:  Performance per watt study!!
-
-Strategies:
-1. Randomly partition data into N groups (where N is the number of parallellas).  Possibly Master has a smaller partition.
-2. Each node must do pre-computation to build the LSH hash table/map.  We must measure this.
-3. We then will also measure the actual KNN search computation for an input element.
-
-Dimensionality Reduction:  LSH  (This is dimensionality reduction, which will count for one of the 3 techniques we need to use according to Amaury)
-For LSH, we will probably just want to use the same strategy as in the slides from lecture.
-
-Data Reduction: May want to drop least significant bits of colors in each pixel in our dataset.  (This would be data reduction -- also one of the 3 necessary techniques we have to use, according to Amaury)
-
-We will also compare this to Shabih's 16-core Apple trash can.
-
-Maybe also get data from the TA's Xeon Phi study.
