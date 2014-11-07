@@ -1,3 +1,15 @@
+'''
+	@author: syedshabihhasan
+
+	Usage: 
+	python getFileList.py <folder to look into> <extension to find without '.'> <path to output file>
+	
+	For example, if we want to find all files with extension '.ext' 
+	(eg. a.ext, b.ext, somename.ext etc.) in the folder foo 
+	(located at /Documents/foo/) and output the list of files to 
+	op.txt
+	python getFileList.py /Documents/foo/ ext ./op.txt
+'''
 import sys;
 import os;
 import fnmatch;
