@@ -14,6 +14,11 @@ parfor P=1:n
     actualFname = strsplit(actualFname,'.');
     actualFname = actualFname{1};
     toSaveMAT = sprintf('../dataVariables/matFiles/%s.mat',actualFname);
-    hdf5_to_matfile(hdfFname,toSaveMAT);
+    try
+        hdf5_to_matfile(hdfFname,toSaveMAT);
+    catch err
+        disp(sprintf('Error in file %s, skipping',hdfFname));
+        continue;
+    end
 end
 delete(parObj);
