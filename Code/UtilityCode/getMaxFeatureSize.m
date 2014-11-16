@@ -6,9 +6,13 @@ featList = listOfFeatures.feature_names;
 
 for P=1:length(fileList)
     disp(sprintf('Index: %d',P));
-    temp = load(fileList{P});
+    try
+        temp = load(fileList{P});
+    catch err
+        disp(sprintf('Error opening file, skipping, %s',fileList{P}));
+        continue;
+    end
     for Q=1:length(featList)
-        disp(Q);
         cellTest = eval(sprintf('iscell(temp.%s);',featList{Q}));
         if ~cellTest
             nanTest = eval(sprintf('isnan(temp.%s);',featList{Q}));
