@@ -5,6 +5,7 @@ function [ listOfFeatures ] = getMaxFeatureSize( listOfFeatures, fileList )
 featList = listOfFeatures.feature_names;
 
 for P=1:length(fileList)
+    disp(sprintf('Index: %d',P));
     temp = load(fileList{P});
     for Q=1:length(featList)
         disp(Q);
@@ -38,6 +39,7 @@ for P=1:length(fileList)
             eval(sprintf('listOfFeatures.feature_nan_present(strcmp(listOfFeatures.feature_names,''%s'')) = true;',featList{Q}));
         end
     end
+    disp(sprintf('Done with file, %s',fileList{P}));
 end
 
 end
