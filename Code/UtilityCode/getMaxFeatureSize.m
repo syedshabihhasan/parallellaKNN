@@ -13,6 +13,10 @@ for P=1:length(fileList)
         continue;
     end
     for Q=1:length(featList)
+        fieldTest = eval(sprintf('isfield(temp,''%s'');',featList{Q}));
+        if ~fieldTest
+            continue;
+        end
         cellTest = eval(sprintf('iscell(temp.%s);',featList{Q}));
         if ~cellTest
             nanTest = eval(sprintf('isnan(temp.%s);',featList{Q}));
