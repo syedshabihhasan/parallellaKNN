@@ -6,6 +6,7 @@ function [ mapper ] = reduceDataset( fileList, opFolder )
 n = length(fileList);
 mapper = cell(n,1);
 for P=1:n
+    try
     %% load file, see if everything is present, if not skip file
     [shouldSkip, key, seg_pitch, seg_timbre, tatum_start, tempo, ...
         time_sig] = parallelLoad(fileList{P});
@@ -56,6 +57,11 @@ for P=1:n
     fclose(f);
     disp(sprintf('Done writing binary file, '));
     mapper{P} = fnameToSave;
+    catch err
+        disp(sprintf('There was an error processing file %s',fileList{P}));
+        mapper{P} = 'error';
+        continue;
+    end
 end
 %delete(parObj);
 
