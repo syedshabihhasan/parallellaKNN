@@ -2,10 +2,10 @@ function [ mapper ] = reduceDataset( fileList, opFolder )
 %REDUCEDATASET script to reduce the dataset size
 %   @author: Syed Shabih Hasan
 
-%parObj = parpool;
+parObj = parpool;
 n = length(fileList);
 mapper = cell(n,1);
-for P=1:n
+parfor P=1:n
     try
     %% load file, see if everything is present, if not skip file
     [shouldSkip, key, seg_pitch, seg_timbre, tatum_start, tempo, ...
@@ -63,7 +63,7 @@ for P=1:n
         continue;
     end
 end
-%delete(parObj);
+delete(parObj);
 
 end
 
