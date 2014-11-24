@@ -1,21 +1,24 @@
-#include "EE1.h"
 #include <e_lib.h>
+#include "EE1.h"
 
 int main(void) {
 
-/*
-  unsigned int *block1;
-  unsigned int *block2;
-  unsigned int *resultPtr;
+  unsigned int *bufp = (unsigned int *) 0x01000000;
+  unsigned int *flag = (unsigned int *) 0x7000;
+  unsigned int word;
   int i;
-  unsigned int a;
-  unsinged int result = 0x3;
 
-  block1 = (unsigned int *) 0x2000;
-  block2 = (unsigned int *) 0x4000;
+  while (*flag != 0xDDDDDDDD);
 
-  *resultPtr = result;
-*/
+  for (i = 0; i < 262144; ++i) {
+    e_read(&e_emem_config, &word, E_SELF, E_SELF, bufp + i, sizeof(unsigned int));
+    if (word != 0xBBBBBBBB) {
+      *flag = 0xE0E0E0E0;
+      goto Done;
+    }
+  }
+  *flag = 0x11111111;
 
+Done:
   return 0;
 }
