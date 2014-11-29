@@ -9,7 +9,8 @@ parfor P=1:n
     try
     %% load file, see if everything is present, if not skip file
     [shouldSkip, key, seg_pitch, seg_timbre, tatum_start, tempo, ...
-        time_sig] = parallelLoad(fileList{P});
+        time_sig, seg_conf,sec_conf,key_conf,seg_loud_max] ...
+        = parallelLoad(fileList{P});
     if shouldSkip
         disp(sprintf('Either NaN or non existent field for %s',...
             fileList{P}));
@@ -38,6 +39,9 @@ parfor P=1:n
         seg_timbre_stat(end+1:end+length(temp)) = temp;
     end
     tatum_start_stats = arrayStats(tatum_start);
+    segments_confidence_stats = arrayStats(seg_conf);
+    sections_confidence_stats = arrayStats(sec_conf);
+    segments_loudness_max_stats = arrayStats(seg_loud_max);
     actualFilename = getActualFilename(fileList{P});
     fnameToSave = strcat(opFolder,'/',actualFilename,'.bin');
     %% write the values
@@ -54,6 +58,14 @@ parfor P=1:n
     fwrite(f,tempo,'double',0,'l');
     % write the time signature, an integer
     fwrite(f,time_sig,'int',0,'l');
+    % write the segments confidence, doubles
+    fwrite(f,segments_confidence_stats,'double',0,'l');
+    % write the sections confidence, doubles
+    fwrite(f,sections_confidence_stats,'double',0,'l');
+    % write the segments loudness max, doubles
+    fwrite(f,segments_loudness_max_stats,'double',0,'l');
+    % write the key confidence, double
+    fwrite(f,key_conf,'double',0,'l');
     fclose(f);
     disp(sprintf('Done writing binary file, '));
     mapper{P} = fnameToSave;
