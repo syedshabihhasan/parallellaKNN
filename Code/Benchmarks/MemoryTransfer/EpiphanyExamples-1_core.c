@@ -1,5 +1,5 @@
-#include <e_lib.h>
 #include "EE1.h"
+#include <e_lib.h>
 
 int main(void) {
 
@@ -12,13 +12,12 @@ int main(void) {
 
   for (i = 0; i < 262144; ++i) {
     e_read(&e_emem_config, &word, E_SELF, E_SELF, bufp + i, sizeof(unsigned int));
-    if (word != 0xBBBBBBBB) {
+    if (word != (unsigned int) i) {
       *flag = 0xE0E0E0E0;
-      goto Done;
+      return 0;
     }
   }
   *flag = 0x11111111;
 
-Done:
   return 0;
 }
