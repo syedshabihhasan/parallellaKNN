@@ -16,6 +16,7 @@ parfor P=1:n
         disp(sprintf('Either NaN or non existent field for %s',...
             fileList{P}));
         mapper{P} = 'skipped';
+        mat_mapper{P} = 'skipped';
         continue;
     end
     %% calculate the stats of segment pitches and tatums start
@@ -81,6 +82,7 @@ parfor P=1:n
     catch err
         disp(sprintf('There was an error processing file %s',fileList{P}));
         mapper{P} = 'error';
+        mat_mapper{P} = 'error';
         continue;
     end
 end
