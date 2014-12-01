@@ -1,10 +1,11 @@
-function [ mapper ] = reduceDataset( fileList, opFolder )
+function [ mapper, mat_mapper] = reduceDataset( fileList, opFolder )
 %REDUCEDATASET script to reduce the dataset size
 %   @author: Syed Shabih Hasan
 
 parObj = parpool;
 n = length(fileList);
 mapper = cell(n,1);
+mat_mapper = cell(n,1);
 parfor P=1:n
     try
     %% load file, see if everything is present, if not skip file
@@ -67,8 +68,16 @@ parfor P=1:n
     % write the key confidence, double
     fwrite(f,key_conf,'double',0,'l');
     fclose(f);
-    disp(sprintf('Done writing binary file, '));
+    disp(sprintf('Done writing binary file, %s',fnameToSave));
     mapper{P} = fnameToSave;
+    ipArray = {fileList{P},fnameToSave, key, seg_pitch_stat,...
+        seg_timbre_stat, tatum_start_stats, tempo, time_sig, ...
+        segments_confidence_stats, sections_confidence_stats, ...
+        segments_loudness_max_stats, key_conf};
+    matFToSave = strcat(opFolder,'_mat','/',actualFilename);
+    parSave(ipArray,matFToSave);
+    disp(sprintf('MAT file written,%s',matFToSave));
+    mat_mapper{P} = strcat(matFToSave,'.mat');
     catch err
         disp(sprintf('There was an error processing file %s',fileList{P}));
         mapper{P} = 'error';
