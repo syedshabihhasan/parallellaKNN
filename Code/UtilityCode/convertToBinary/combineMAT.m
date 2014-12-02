@@ -1,6 +1,6 @@
 function [ combinedMAT ] = combineMAT( matFileList )
 %COMBINEMAT Summary of this function goes here
-%   Detailed explanation goes here
+%   @author: Syed Shabih Hasan
 
 combinedMAT = {};
 
