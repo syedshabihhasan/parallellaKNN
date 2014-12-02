@@ -10,6 +10,7 @@ for P=1:length(matFileList)
     end
     if 0 == mod(P,100000)
         save(sprintf('comb%d',P),'combinedMAT');
+        combinedMAT = {};
     end
     if strcmp(matFileList{P,2},'skipped') ||...
             strcmp(matFileList{P,2},'error')
