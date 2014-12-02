@@ -1,6 +1,6 @@
 function [ actualFilename ] = getActualFilename( filename )
 %GETACTUALFILENAME Summary of this function goes here
-%   Detailed explanation goes here
+%   @author: Syed Shabih Hasan
 
 filename = strsplit(filename,'/');
 filename = strsplit(filename{end},'.');
