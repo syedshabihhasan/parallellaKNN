@@ -1,6 +1,6 @@
 function [ opStats ] = arrayStats( ipArray )
 %ARRAYSTATS Extract the stats out of the input survey
-%   Detailed explanation goes here
+%   @author: Syed Shabih Hasan
 % opStats = zeros(1,110);
 opStats = zeros(1,5);
 opStats(1) = min(ipArray);
