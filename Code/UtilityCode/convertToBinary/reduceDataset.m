@@ -9,8 +9,8 @@ mat_mapper = cell(n,1);
 parfor P=1:n
     try
     %% load file, see if everything is present, if not skip file
-    [shouldSkip, key, seg_pitch, seg_timbre, tatum_start, tempo, ...
-        time_sig, seg_conf,sec_conf,key_conf,seg_loud_max] ...
+    [shouldSkip, key, seg_pitch, seg_timbre, ~, tempo, ...
+        ~, seg_conf,~,key_conf,~] ...
         = parallelLoad(fileList{P});
     if shouldSkip
         disp(sprintf('Either NaN or non existent field for %s',...
@@ -40,14 +40,16 @@ parfor P=1:n
         temp = arrayStats(seg_timbre(Q,:));
         seg_timbre_stat(end+1:end+length(temp)) = temp;
     end
-    tatum_start_stats = arrayStats(tatum_start);
-    segments_confidence_stats = arrayStats(seg_conf);
-    sections_confidence_stats = arrayStats(sec_conf);
-    segments_loudness_max_stats = arrayStats(seg_loud_max);
+%     tatum_start_stats = arrayStats(tatum_start);
+     segments_confidence_stats = arrayStats(seg_conf);
+%     sections_confidence_stats = arrayStats(sec_conf);
+%     segments_loudness_max_stats = arrayStats(seg_loud_max);
     actualFilename = getActualFilename(fileList{P});
     fnameToSave = strcat(opFolder,'/',actualFilename,'.bin');
     %% write the values
     f = fopen(fnameToSave,'w');
+    % write the UID (which is P)
+    fwrite(f,P,'int',0,'l');
     % write key, an integer
     fwrite(f,key,'int',0,'l');
     % write segment pitches stats, doubles
@@ -55,26 +57,24 @@ parfor P=1:n
     % write segment timbre stats, doubles
     fwrite(f,seg_timbre_stat,'double',0,'l');
     % write tatum start stats, doubles
-    fwrite(f,tatum_start_stats,'double',0,'l');
+%     fwrite(f,tatum_start_stats,'double',0,'l');
     % write the tempo, a double
     fwrite(f,tempo,'double',0,'l');
     % write the time signature, an integer
-    fwrite(f,time_sig,'int',0,'l');
+%     fwrite(f,time_sig,'int',0,'l');
     % write the segments confidence, doubles
     fwrite(f,segments_confidence_stats,'double',0,'l');
     % write the sections confidence, doubles
-    fwrite(f,sections_confidence_stats,'double',0,'l');
+%      fwrite(f,sections_confidence_stats,'double',0,'l');
     % write the segments loudness max, doubles
-    fwrite(f,segments_loudness_max_stats,'double',0,'l');
+%     fwrite(f,segments_loudness_max_stats,'double',0,'l');
     % write the key confidence, double
     fwrite(f,key_conf,'double',0,'l');
     fclose(f);
     disp(sprintf('Done writing binary file, %s',fnameToSave));
     mapper{P} = fnameToSave;
-    ipArray = {fileList{P},fnameToSave, key, seg_pitch_stat,...
-        seg_timbre_stat, tatum_start_stats, tempo, time_sig, ...
-        segments_confidence_stats, sections_confidence_stats, ...
-        segments_loudness_max_stats, key_conf};
+    ipArray = {fileList{P},fnameToSave, P, key, seg_pitch_stat,...
+        seg_timbre_stat, tempo, segments_confidence_stats, key_conf};
     matFToSave = strcat(opFolder,'_mat','/',actualFilename);
     parSave(ipArray,matFToSave);
     disp(sprintf('MAT file written,%s',matFToSave));
