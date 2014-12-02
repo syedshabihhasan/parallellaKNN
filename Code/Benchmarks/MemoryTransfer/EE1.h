@@ -1,3 +1,11 @@
+/*JWHSSHVBSGPLHERE*/
+/*
+ * EE1.h
+ *
+ * Author: James W Hegeman
+ *
+ */
+
 #ifndef __EE1_H__
 #define __EE1_H__
 

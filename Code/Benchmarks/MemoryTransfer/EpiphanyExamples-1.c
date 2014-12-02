@@ -1,3 +1,11 @@
+/*JWHSSHVBSGPLHERE*/
+/*
+ * EpiphanyExamples-1.c
+ *
+ * Author: James W Hegeman
+ *
+ */
+
 #include "EE1.h"
 #include <e-hal.h>
 
@@ -16,8 +24,8 @@ int main(int argc, char *argv[]) {
   int j;
   int c1_row = 1;
   int c1_col = 2;
-  int c2_row = 2;
-  int c2_col = 1;
+  int c2_row = 0;
+  int c2_col = 0;
   int mc_row = atoi(argv[1]);
   int mc_col = atoi(argv[2]);
   unsigned int flag = 0x00000000;

@@ -1,3 +1,11 @@
+/*JWHSSHVBSGPLHERE*/
+/*
+ * MemoryTransfer-DMA_core.c
+ *
+ * Author: James W Hegeman
+ *
+ */
+
 #include "EE1.h"
 #include <e_lib.h>
 
@@ -6,7 +14,7 @@ int main(void) {
   e_dma_desc_t dma_desc[2];
   void *buffer[2];
   unsigned int *flag = (unsigned int *) 0x7000;
-  unsigned int *bank[3];
+  unsigned int *bank[4];
   unsigned int error_code = 0xE0E0E0E0;
   unsigned int global_i = 0x00000000;
   int i;
@@ -59,13 +67,14 @@ int main(void) {
     for (b = 1; b < 3; ++b) {
       for (j = 0; j < 2048; ++j) {
         if (*(bank[b] + j) != global_i++) {
-          *flag = error_code;
+          *flag = global_i;
           return 0;
         }
       }
     }
   }
-  *flag = 0x11111111;
+
+  *flag = (unsigned int) e_get_coreid();
   //*flag = (unsigned int) sizeof(e_dma_desc_t);
 
   return 0;

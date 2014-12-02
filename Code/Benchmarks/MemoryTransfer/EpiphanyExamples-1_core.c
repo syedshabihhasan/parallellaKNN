@@ -1,3 +1,11 @@
+/*JWHSSHVBSGPLHERE*/
+/*
+ * EpiphanyExamples-1_core.c
+ *
+ * Author: James W Hegeman
+ *
+ */
+
 #include "EE1.h"
 #include <e_lib.h>
 
@@ -10,7 +18,8 @@ int main(void) {
 
   while (*flag != 0xDDDDDDDD);
 
-  for (i = 0; i < 262144; ++i) {
+  //for (i = 0; i < 262144; ++i) {
+  for (i = 0; i < 256; ++i) {
     e_read(&e_emem_config, &word, E_SELF, E_SELF, bufp + i, sizeof(unsigned int));
     if (word != (unsigned int) i) {
       *flag = 0xE0E0E0E0;
