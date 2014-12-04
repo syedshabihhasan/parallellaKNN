@@ -6,6 +6,9 @@ flatFile = [];
 [r,~] = size(actualDataset);
 
 for P=1:r
+    if 0 == mod(P,10000)
+        disp(sprintf('I am at P=%d',P));
+    end
     toConsider = actualDataset(P,2:end);
     temp = '';
     [~,n] = size(toConsider);
