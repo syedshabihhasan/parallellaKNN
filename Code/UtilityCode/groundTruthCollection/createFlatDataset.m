@@ -5,25 +5,32 @@ function [ flatFile ] = createFlatDataset( actualDataset,savePath )
 if 1 == nargin
     savePath = '.';
 end
-flatFile = [];
+flatFile = '';
 [r,~] = size(actualDataset);
-
-for P=1:r
-    if 0 == mod(P,10000)
-        disp(sprintf('I am at P=%d',P));
-    end
+flatFileCell = cell(r,1);
+parObj = parpool;
+parfor P=1:r
+    disp(sprintf('Parfor, P=%d',P));
     toConsider = actualDataset(P,2:end);
     temp = '';
     [~,n] = size(toConsider);
     for Q=1:n
         temp = strcat(temp,doub2bin(toConsider(Q)));
     end
-    flatFile = [flatFile; temp;];
-    if 0 == mod(P,100000)
-        save(sprintf('%s/final_flat_%d',P),'flatFile');
-        flatFile = [];
-    end
-end
+    flatFileCell{P} = temp;
 
+end
+delete(parObj);
+disp('Done with parallel job!');
+for P=1:r
+    if 0 == mod(P,10000)
+        disp(sprintf('I am at P=%d',P));
+    end
+    flatFile = [flatFile; flatFileCell{P}];
+    if 0 == mod(P,100000)
+       save(sprintf('%s/final_flat_%d',P),'flatFile');
+       flatFile = [];
+   end
+end
 end
 
