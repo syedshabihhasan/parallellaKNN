@@ -13,7 +13,6 @@ for P=1:r
         temp = strcat(temp,doub2bin(toConsider(Q)));
     end
     flatFile = [flatFile; temp;];
-    temp = [];
 end
 
 end
