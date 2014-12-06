@@ -5,26 +5,33 @@ function [ flatFile ] = createFlatDataset( actualDataset,savePath )
 if 1 == nargin
     savePath = '.';
 end
-flatFile = '';
+% flatFile = '';
 [r,~] = size(actualDataset);
-flatFileCell = cell(r,1);
-parObj = parpool;
-parfor P=1:r
-    disp(sprintf('Parfor, P=%d',P));
+% flatFileCell = cell(r,1);
+%parObj = parpool;
+toSave = strcat(savePath,'/opBin.txt');
+f = fopen(toSave,'w');
+for P=1:r
+    if 0 == mod(P,10000)
+        disp(sprintf('P=%d',P));
+    end
+    %disp(sprintf('Parfor, P=%d',P));
     toConsider = actualDataset(P,2:end);
     temp = '';
     [~,n] = size(toConsider);
     for Q=1:n
         temp = strcat(temp,doub2bin(toConsider(Q)));
     end
-    flatFileCell{P} = temp;
+    fprintf('%s\n',temp);
+%     flatFileCell{P} = temp;
 
 end
-delete(parObj);
-save(sprintf('%s/cellFlat',savePath),'flatFileCell');
-disp('Done with parallel job!');
-flatFile = cell2mat(flatFileCell);
-save(sprintf('%s/final_flat',savePath),'flatFile');
+fclose(f);
+%delete(parObj);
+% save(sprintf('%s/cellFlat',savePath),'flatFileCell');
+% disp('Done with parallel job!');
+% flatFile = cell2mat(flatFileCell);
+% save(sprintf('%s/final_flat',savePath),'flatFile');
 % for P=1:r
 %     if 0 == mod(P,10000)
 %         disp(sprintf('I am at P=%d',P));
