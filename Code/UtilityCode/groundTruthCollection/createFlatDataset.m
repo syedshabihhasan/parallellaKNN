@@ -22,7 +22,7 @@ for P=1:r
     for Q=1:n
         temp = strcat(temp,doub2bin(toConsider(Q)));
     end
-    fprintf('%s\n',temp);
+    fprintf(f,'%s\n',temp);
 %     flatFileCell{P} = temp;
 
 end
