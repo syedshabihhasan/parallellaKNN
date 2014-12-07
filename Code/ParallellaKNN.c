@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 
   EXEC(e_start_group(&EpiphanyGpu));
 
-  ProcessRecords(distance, identifiers, count, query);
+  ProcessRecords(distances, identifiers, count, query);
 
   EXEC(e_close(&EpiphanyGpu));
   EXEC(e_finalize());
