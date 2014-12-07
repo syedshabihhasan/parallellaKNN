@@ -38,8 +38,9 @@
 #define	DW				0x0008
 #define	DMA0				E_DMA_0
 #define	DMA1				E_DMA_1
-#define	DMA_SET_0(X, Y, Z, W)		e_dma_set_desc(DMA0, dma_config, H0, DW, DW, X, Y, DW, DW, Z, W, &dma_desc[0])
-#define	DMA_SET_1(X, Y, Z, W)		e_dma_set_desc(DMA1, dma_config, H0, DW, DW, X, Y, DW, DW, Z, W, &dma_desc[1])
+#define	DMA_CONFIG			E_DMA_ENABLE | E_DMA_MASTER | E_DMA_DWORD;
+#define	DMA_SET_0(X, Y, Z, W)		e_dma_set_desc(DMA0, DMA_CONFIG, H0, DW, DW, X, Y, DW, DW, Z, W, &dma_desc[0])
+#define	DMA_SET_1(X, Y, Z, W)		e_dma_set_desc(DMA1, DMA_CONFIG, H0, DW, DW, X, Y, DW, DW, Z, W, &dma_desc[1])
 #define	DMA_START_0			e_dma_start(&dma_desc[0], DMA0)
 #define	DMA_START_1			e_dma_start(&dma_desc[1], DMA1)
 #define	DMA_WAIT_0			e_dma_wait(DMA0)
@@ -91,101 +92,121 @@ int main(void) {
    */
 
   unsigned int *record;
-  unsigned int *query;
-  unsigned int *distp;
   unsigned int *countp;
+  unsigned int *distp;
+  unsigned int *dummy;
   void *buffer;
   void *heap_addr;
-  void *dummy2;
+  void *dist_addr;
   void *dflag;
-  register unsigned int d;
-  register unsigned int j;
-  unsigned int dist;
   unsigned int i;
-  unsigned int ID;
   unsigned int count;
-  unsigned int group;
+  unsigned int ID;
   unsigned emem_base;
-  unsigned dma_config;
   e_dma_desc_t dma_desc[NUM_DMA_CHANNELS];
 
   /* Expect ARM to write this prior to starting the core */
   emem_base = e_emem_config.base;
   ID = *((unsigned int *) LOCAL_ID_ADDR);
-  dma_config = E_DMA_ENABLE | E_DMA_MASTER | E_DMA_DWORD;
 
   buffer = (void *) ((void *) emem_base + HEAP_BUFFER_ADDR);
-  dflag = (void *) ((void *) emem_base + DONE_FLAGS_BASE + ID * UNSIGNED_INT_SIZE);
+  heap_addr = (void *) ((void *) emem_base + HEAP_BUFFER_ADDR + ID * 0x40000);
+  dist_addr = (void *) ((void *) emem_base + DISTANCE_ARRAYS_BASE + ID * 0x40);
   countp = (unsigned int *) ((void *) emem_base + COUNTS_BASE + ID * UNSIGNED_INT_SIZE);
+  dflag = (void *) ((void *) emem_base + DONE_FLAGS_BASE + ID * UNSIGNED_INT_SIZE);
 
   while (*((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO);
-
   *((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO;
+
   count = *countp;
-  heap_addr = buffer + ID * 0x40000;
-  distp = (unsigned int *) LOCAL_DISTANCE_ARRAY_ADDR;
 
   /* Get query record */
-  DMA_SET_1(0x20, 0x04, (void *) QUERY_RECORD_ADDR, (void *) LOCAL_QUERY_RECORD_ADDR);
-  DMA_START_1;
-
-  e_dma_wait(DMA1);
+  DMA_SET_0(0x0020, 0x0004, (void *) QUERY_RECORD_ADDR, (void *) LOCAL_QUERY_RECORD_ADDR);
+  DMA_START_0;
+  DMA_WAIT_0;
 
   /* Process records 16 at a time */
-  while (count > FIFTEEN) {
+  while (count > SIXTEEN) {
     DMA_SET_0(0x0020, 0x0020, heap_addr, (void *) LOCAL_BANK_1_ADDR);
-    DMA_SET_1(0x0020, 0x0020, heap_addr + BANK_SIZE, (void *) LOCAL_BANK_2_ADDR);
     DMA_START_0;
+    DMA_SET_1(0x0020, 0x0020, heap_addr + BANK_SIZE, (void *) LOCAL_BANK_2_ADDR);
     DMA_START_1;
 
-    DMA_WAIT_0;
+    distp = (unsigned int *) LOCAL_DISTANCE_ARRAY_ADDR;
     record = (unsigned int *) LOCAL_BANK_1_ADDR;
+    DMA_WAIT_0;
     for (i = ZERO; i < EIGHT; ++i) {
       *distp++ = hamming_dist(record);
       record += WORDS_PER_RECORD;
     }
 
-    DMA_WAIT_1;
     record = (unsigned int *) LOCAL_BANK_2_ADDR;
+    DMA_WAIT_1;
     for (i = ZERO; i < EIGHT; ++i) {
       *distp++ = hamming_dist(record);
       record += WORDS_PER_RECORD;
     }
 
+    DMA_SET_0(0x0008, 0x0001, (void *) LOCAL_DISTANCE_ARRAY_ADDR, dist_addr);
+    DMA_START_0;
+    DMA_WAIT_0;
+
+    *dflag = ONES;
     count -= SIXTEEN;
+
+    while (*((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO);
+    *((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO;
   }
 
   if (count > EIGHT) {
     count -= EIGHT;
     DMA_SET_0(0x0020, 0x0020, heap_addr, (void *) LOCAL_BANK_1_ADDR);
-    DMA_SET_1(0x0020, count * 0x0004, heap_addr + BANK_SIZE, (void *) LOCAL_BANK_2_ADDR);
     DMA_START_0;
+    DMA_SET_1(0x0020, count * 0x0004, heap_addr + BANK_SIZE, (void *) LOCAL_BANK_2_ADDR);
     DMA_START_1;
 
-    DMA_WAIT_0;
+    distp = (unsigned int *) LOCAL_DISTANCE_ARRAY_ADDR;
     record = (unsigned int *) LOCAL_BANK_1_ADDR;
+    DMA_WAIT_0;
     for (i = ZERO; i < EIGHT; ++i) {
       *distp++ = hamming_dist(record);
       record += WORDS_PER_RECORD;
     }
 
+    record = (unsigned int *) LOCAL_BANK_2_ADDR;
     DMA_WAIT_1;
     for (i = ZERO; i < count; ++i) {
       *distp++ = hamming_dist(record);
       record += WORDS_PER_RECORD;
     }
 
+    DMA_SET_0(0x0008, 0x0001, (void *) LOCAL_DISTANCE_ARRAY_ADDR, dist_addr);
+    DMA_START_0;
+    DMA_WAIT_0;
+
+    *dflag = ONES;
+
   } else if (count > ZERO) {
     DMA_SET_0(0x0020, count * 0x0004, heap_addr, (void *) LOCAL_BANK_1_ADDR);
     DMA_START_0;
 
-    DMA_WAIT_0;
+    distp = (unsigned int *) LOCAL_DISTANCE_ARRAY_ADDR;
     record = (unsigned int *) LOCAL_BANK_1_ADDR;
+    DMA_WAIT_0;
     for (i = ZERO; i < count; ++i) {
       *distp++ = hamming_dist(record);
       record += WORDS_PER_RECORD;
     }
+
+    DMA_SET_0(0x0008, 0x0001, (void *) LOCAL_DISTANCE_ARRAY_ADDR, dist_addr);
+    DMA_START_0;
+    DMA_WAIT_0;
+
+    *dflag = ONES;
   }
+
+  while (*((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO);
+  *dflag = 0x600D600D;
 
   return 0;
 }
