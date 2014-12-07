@@ -85,6 +85,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
    *
    */
 
+  e_mem_t membuf;
   FILE *records_file;
   unsigned int *distp;
   unsigned int *done_flags;
@@ -104,7 +105,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
 
   id = identifiers;
 
-  if ((records_file = fopen(RECORDS_FILE_NAME, "rb")) == NULL) {
+  if ((records_file = fopen("../records.bin", "rb")) == NULL) {
     fprintf(stderr, "Could not open records file.\n");
     fflush(stderr);
     exit(-1);
@@ -206,6 +207,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
       for (i = ZERO; i < divcount; ++i) {
         *distances++ = *distp++;
       }
+    }
   }
 
   for (core = ZERO; core < SIXTEEN; ++core) {
