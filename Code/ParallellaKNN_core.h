@@ -10,46 +10,46 @@
 
 /* This is the device-side header file */
 
-#ifndef	__PARALLELLA_KNN_CORE_H__
-#define	__PARALLELLA_KNN_CORE_H__
+#ifndef __PARALLELLA_KNN_CORE_H__
+#define __PARALLELLA_KNN_CORE_H__
 
 #include <stdlib.h>
 #include <e-lib.h>
 
-#define NUM_BANKS                       4
-#define NUM_DMA_CHANNELS                2
-#define BANK_SIZE                       0x2000
-#define WORDS_PER_RECORD                0x0100
-#define LOCAL_BANK_0_ADDR               0x0000
-#define LOCAL_BANK_1_ADDR               0x2000
-#define LOCAL_BANK_2_ADDR               0x4000
-#define LOCAL_BANK_3_ADDR               0x6000
-#define LOCAL_QUERY_RECORD_ADDR         0x6000
-#define LOCAL_DISTANCE_ARRAY_ADDR       0x6400
-#define LOCAL_START_FLAG_ADDR           0x6440
-#define LOCAL_ID_ADDR                   0x6444
-#define HEAP_BUFFER_ADDR                0x01000000
-#define QUERY_RECORD_ADDR               0x01FFF000
-#define DISTANCE_ARRAYS_BASE            0x01FFF400
-#define COUNTS_BASE                     0x01FFF800
-#define DONE_FLAGS_BASE                 0x01FFF840
-#define ZERO                            0x00000000
-#define ONE                             0x00000001
-#define EIGHT                           0x00000008
-#define FIFTEEN                         0x0000000F
-#define SIXTEEN                         0x00000010
-#define ONES                            0x7FFFFFFF
-#define H0                              0x0000
-#define DW                              0x0008
-#define DMA0                            E_DMA_0
-#define DMA1                            E_DMA_1
-#define DMA_CONFIG                      E_DMA_ENABLE | E_DMA_MASTER | E_DMA_DWORD;
-#define DMA_SET_0(X, Y, Z, W)           e_dma_set_desc(DMA0, DMA_CONFIG, H0, DW, DW, X, Y, DW, DW, Z, W, &dma_desc[0])
-#define DMA_SET_1(X, Y, Z, W)           e_dma_set_desc(DMA1, DMA_CONFIG, H0, DW, DW, X, Y, DW, DW, Z, W, &dma_desc[1])
-#define DMA_START_0                     e_dma_start(&dma_desc[0], DMA0)
-#define DMA_START_1                     e_dma_start(&dma_desc[1], DMA1)
-#define DMA_WAIT_0                      e_dma_wait(DMA0)
-#define DMA_WAIT_1                      e_dma_wait(DMA1)
+#define	NUM_BANKS			4
+#define	NUM_DMA_CHANNELS		2
+#define	BANK_SIZE			0x2000
+#define	WORDS_PER_RECORD		0x0100
+#define	LOCAL_BANK_0_ADDR		0x0000
+#define	LOCAL_BANK_1_ADDR		0x2000
+#define	LOCAL_BANK_2_ADDR		0x4000
+#define	LOCAL_BANK_3_ADDR		0x6000
+#define	LOCAL_QUERY_RECORD_ADDR		0x6000
+#define	LOCAL_DISTANCE_ARRAY_ADDR	0x6400
+#define	LOCAL_START_FLAG_ADDR		0x6440
+#define	LOCAL_ID_ADDR			0x6444
+#define	HEAP_BUFFER_ADDR		0x01000000
+#define	QUERY_RECORD_ADDR		0x01FFF000
+#define	DISTANCE_ARRAYS_BASE		0x01FFF400
+#define	COUNTS_BASE			0x01FFF800
+#define	DONE_FLAGS_BASE			0x01FFF840
+#define	ZERO				0x00000000
+#define	ONE				0x00000001
+#define	EIGHT				0x00000008
+#define	FIFTEEN				0x0000000F
+#define	SIXTEEN				0x00000010
+#define	ONES				0x7FFFFFFF
+#define	H0				0x0000
+#define	DW				0x0008
+#define	DMA0				E_DMA_0
+#define	DMA1				E_DMA_1
+#define	DMA_CONFIG			E_DMA_ENABLE | E_DMA_MASTER | E_DMA_DWORD;
+#define	DMA_SET_0(X, Y, Z, W)		e_dma_set_desc(DMA0, DMA_CONFIG, H0, DW, DW, X, Y, DW, DW, Z, W, &dma_desc[0])
+#define	DMA_SET_1(X, Y, Z, W)		e_dma_set_desc(DMA1, DMA_CONFIG, H0, DW, DW, X, Y, DW, DW, Z, W, &dma_desc[1])
+#define	DMA_START_0			e_dma_start(&dma_desc[0], DMA0)
+#define	DMA_START_1			e_dma_start(&dma_desc[1], DMA1)
+#define	DMA_WAIT_0			e_dma_wait(DMA0)
+#define	DMA_WAIT_1			e_dma_wait(DMA1)
 
 /*
  * ----------------------------- On the ARM SoC ------------------------------

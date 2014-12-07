@@ -11,31 +11,32 @@
 #include "ParallellaKNN.h"
 
 /*
-#define NUM_BANKS                       4
-#define NUM_DMA_CHANNELS                2
-#define BANK_SIZE                       0x2000
-#define WORDS_PER_RECORD                0x0100
-#define LOCAL_BANK_0_ADDR               0x0000
-#define LOCAL_BANK_1_ADDR               0x2000
-#define LOCAL_BANK_2_ADDR               0x4000
-#define LOCAL_BANK_3_ADDR               0x6000
-#define LOCAL_QUERY_RECORD_ADDR         0x6000
-#define LOCAL_DISTANCE_ARRAY_ADDR       0x6400
-#define LOCAL_START_FLAG_ADDR           0x6440
-#define LOCAL_ID_ADDR                   0x6444
-#define HEAP_BUFFER_ADDR                0x01000000
-#define QUERY_RECORD_ADDR               0x01FFF000
-#define DISTANCE_ARRAYS_BASE            0x01FFF400
-#define COUNTS_BASE                     0x01FFF800
-#define DONE_FLAGS_BASE                 0x01FFF840
-#define ZERO                            0x00000000
-#define ONE                             0x00000001
-#define EIGHT                           0x00000008
-#define FIFTEEN                         0x0000000F
-#define SIXTEEN                         0x00000010
-#define ONES                            0x7FFFFFFF
-#define H0                              0x0000
-#define DW                              0x0008
+#define	NUM_BANKS			4
+#define	NUM_DMA_CHANNELS		2
+#define	BANK_SIZE			0x2000
+#define	WORDS_PER_RECORD		0x0100
+#define	LOCAL_BANK_0_ADDR		0x0000
+#define	LOCAL_BANK_1_ADDR		0x2000
+#define	LOCAL_BANK_2_ADDR		0x4000
+#define	LOCAL_BANK_3_ADDR		0x6000
+#define	LOCAL_QUERY_RECORD_ADDR		0x6000
+#define	LOCAL_DISTANCE_ARRAY_ADDR	0x6400
+#define	LOCAL_START_FLAG_ADDR		0x6440
+#define	LOCAL_ID_ADDR			0x6444
+#define	HEAP_BUFFER_ADDR		0x01000000
+#define	QUERY_RECORD_ADDR		0x01FFF000
+#define	DISTANCE_ARRAYS_BASE		0x01FFF400
+#define	COUNTS_BASE			0x01FFF800
+#define	DONE_FLAGS_BASE			0x01FFF840
+#define	ZERO				0x00000000
+#define	ONE				0x00000001
+#define	EIGHT				0x00000008
+#define	FIFTEEN				0x0000000F
+#define	SIXTEEN				0x00000010
+#define	TWOFIFTYSIX			0x00000100
+#define	ONES				0x7FFFFFFF
+#define	H0				0x0000
+#define	DW				0x0008
 */
 
 void memcpy_w(void *dest, const void *src, size_t count);
@@ -85,9 +86,10 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
 
   FILE *records_file;
   unsigned int *distp;
-  unsigned int *id;
   unsigned int *done_flags;
   unsigned int *dflag;
+  unsigned int *countp;
+  unsigned int *id;
   void *heap_addr;
   off_t record_offset;
   unsigned int i;
@@ -96,8 +98,8 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
   unsigned row;
   unsigned col;
   unsigned int counts[16];
+  unsigned int divcount;
   unsigned int modcount;
-  int j;
 
   id = identifiers;
 
@@ -110,6 +112,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
   e_alloc(&membuf, ZERO, 0x02000000);
 
   done_flags = (unsigned int *) ((void *) membuf.base + DONE_FLAGS_BASE);
+  countp = (unsigned int *) ((void *) membuf.base + COUNTS_BASE);
   heap_addr = (void *) membuf.base + HEAP_BUFFER_ADDR;
 
   for (core = ZERO; core < SIXTEEN; ++core) {
@@ -117,15 +120,19 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
     *dflag = ZERO;
   }
 
-  modcount = count / 16;
-  core = modcount % 16;
-  for (j = 0; j < 16; ++j) {
-
-
-
+  divcount = count / SIXTEEN;
+  core = count % SIXTEEN;
+  for (i = ZERO; i < core; ++i) {
+    counts[i] = divcount + ONE;
+  }
+  for (i = core; i < SIXTEEN; ++i) {
+    counts[i] = divcount;
+  }
+  for (core = ZERO; core < SIXTEEN; ++core) {
+    *countp++ = counts[core];
   }
 
-  while (count > 0x000000FF) {
+  while (count > TWOFIFTYSIX) {
     for (core = ZERO; core < SIXTEEN; ++core) {
       for (i = ZERO; i < SIXTEEN; ++i) {
         if (i == ZERO) printf("Reading record %d, destined for core %d\n", i, core);
@@ -155,7 +162,63 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
     count -= 256;
   }
 
+  divcount = count / SIXTEEN;
+  modcount = count % SIXTEEN;
+  for (core = ZERO; core < modcount; ++core) {
+    for (i = ZERO; i <= divcount; ++i) {
+      record_offset = *id++ * 0x400;
+      lseek(records_file, record_offset, SEEK_SET);
+      fread(heap_addr, 0x400, ONE, records_file);
+      heap_addr += 0x400;
+    }
+    heap_addr += (SIXTEEN - divcount - ONE) * 0x400;
 
+    row = core / 4;
+    col = core % 4;
+    e_write(&EpiphanyGpu, row, col, LOCAL_START_FLAG_ADDR, &start, sizeof(unsigned int));
+  }
+  for (core = modcount; core < SIXTEEN; ++core) {
+    for (i = ZERO; i < divcount; ++i) {
+      record_offset = *id++ * 0x400;
+      lseek(records_file, record_offset, SEEK_SET);
+      fread(heap_addr, 0x400, ONE, records_file);
+      heap_addr += 0x400;
+    }
+    heap_addr += (SIXTEEN - divcount) * 0x400;
+
+    row = core / 4;
+    col = core % 4;
+    e_write(&EpiphanyGpu, row, col, LOCAL_START_FLAG_ADDR, &start, sizeof(unsigned int));
+  }
+
+  distp = (unsigned int *) ((void *) membuf.base + DISTANCE_ARRAYS_BASE);
+  for (core = ZERO; core < SIXTEEN; ++core) {
+    dflag = done_flags + core;
+    while (*dflag == ZERO);
+    *dflag = ZERO;
+    printf("Recording results from core %d\n", core);
+    if (core < modcount) {
+      for (i = ZERO; i <= divcount; ++i) {
+        *distances++ = *distp++;
+      }
+    } else {
+      for (i = ZERO; i < divcount; ++i) {
+        *distances++ = *distp++;
+      }
+  }
+
+  for (core = ZERO; core < SIXTEEN; ++core) {
+    row = core / 4;
+    col = core % 4;
+    e_write(&EpiphanyGpu, row, col, LOCAL_START_FLAG_ADDR, &start, sizeof(unsigned int));
+  }
+
+  usleep(100000);
+
+  for (core = ZERO; core < SIXTEEN; ++core) {
+    dflag = done_flags + core;
+    printf("Core %u: 0x%X\n", core, *dflag);
+  }
 
   return;
 }
