@@ -42,7 +42,7 @@
 
 void memcpy_w(void *dest, const void *src, size_t count);
 
-void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned int count) {
+void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned int count, unsigned int query) {
 
   /*
    * ----------------------------- On the ARM SoC ------------------------------
@@ -93,6 +93,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
   unsigned int *countp;
   unsigned int *id;
   void *heap_addr;
+  void *query_addr;
   off_t record_offset;
   unsigned int i;
   unsigned int start = ONE;
@@ -116,6 +117,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
   done_flags = (unsigned int *) ((void *) membuf.base + DONE_FLAGS_BASE);
   countp = (unsigned int *) ((void *) membuf.base + COUNTS_BASE);
   heap_addr = (void *) membuf.base + HEAP_BUFFER_ADDR;
+  query_addr = (void *) membuf.base + QUERY_RECORD_ADDR;
 
   for (core = ZERO; core < SIXTEEN; ++core) {
     dflag = done_flags + core;
@@ -134,6 +136,13 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
     *countp++ = counts[core];
   }
 
+  record_offset = (query - 1) * 0x400;
+  fseek(records_file, record_offset, SEEK_SET);
+  fread(query_addr, 0x400, ONE, records_file);
+
+  printf("Set query record %u in shared memory.\n", *((unsigned int *) query_addr));
+  fflush(stdout);
+
   while (count > TWOFIFTYSIX) {
     for (core = ZERO; core < SIXTEEN; ++core) {
       for (i = ZERO; i < SIXTEEN; ++i) {
@@ -149,6 +158,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
       col = core % 4;
       e_write(&EpiphanyGpu, row, col, LOCAL_START_FLAG_ADDR, &start, sizeof(unsigned int));
     }
+    fflush(stdout);
 
     distp = (unsigned int *) ((void *) membuf.base + DISTANCE_ARRAYS_BASE);
     for (core = ZERO; core < SIXTEEN; ++core) {

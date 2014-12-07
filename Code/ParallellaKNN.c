@@ -16,12 +16,26 @@ e_epiphany_t EpiphanyGpu;
 
 int main(int argc, char *argv[]) {
 
+  unsigned int *distances;
+  unsigned int *identifiers;
+  unsigned int count;
+  unsigned int query;
   unsigned int core;
   unsigned int readbuf;
+  unsigned int i;
   unsigned row;
   unsigned col;
   unsigned rows;
   unsigned cols;
+
+  query = 0x1;
+  count = 0xA;
+  distances = (unsigned int *) malloc(count * 0x4);
+  identifiers = (unsigned int *) malloc(count * 0x4);
+
+  for (i = 0; i < count; ++i) {
+    *(identifiers + i) = i + 0x1;
+  }
 
   EXEC(e_init(NULL));
   EXEC(e_reset_system());
@@ -37,7 +51,7 @@ int main(int argc, char *argv[]) {
 
   e_set_host_verbosity(H_D2);
 
-  EXEC(e_load_group("Infrastructure/RecordXfer_c.srec", &EpiphanyGpu, row, col, rows, cols, E_FALSE));
+  EXEC(e_load_group("RecordXfer_c.srec", &EpiphanyGpu, row, col, rows, cols, E_FALSE));
 
   for (core = 0; core < SIXTEEN; ++core) {
     row = core / 4;
@@ -57,14 +71,17 @@ int main(int argc, char *argv[]) {
 
   EXEC(e_start_group(&EpiphanyGpu));
 
-
-
-
-
-
+  ProcessRecords(distance, identifiers, count, query);
 
   EXEC(e_close(&EpiphanyGpu));
   EXEC(e_finalize());
+
+  for (i = 0; i < count; ++i) {
+    printf("Distance between query record (%u) and record %u is %u.\n", query, *(identifiers + i), *(distances + i));
+  }
+
+  free(distances);
+  free(identifiers);
 
   return 0;
 }
