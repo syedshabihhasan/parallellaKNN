@@ -84,4 +84,9 @@
  *
  */
 
+void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned int count);
+
+extern e_platform_t EpiphanyPlatform;
+extern e_epiphany_t EpiphanyGpu;
+
 #endif

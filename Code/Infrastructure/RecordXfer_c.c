@@ -152,7 +152,7 @@ int main(void) {
     DMA_START_0;
     DMA_WAIT_0;
 
-    *dflag = ONES;
+    *dflag = ONE;
     count -= SIXTEEN;
 
     while (*((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO);
@@ -185,7 +185,7 @@ int main(void) {
     DMA_START_0;
     DMA_WAIT_0;
 
-    *dflag = ONES;
+    *dflag = ONE;
 
   } else if (count > ZERO) {
     DMA_SET_0(0x0020, count * 0x0004, heap_addr, (void *) LOCAL_BANK_1_ADDR);
@@ -203,10 +203,12 @@ int main(void) {
     DMA_START_0;
     DMA_WAIT_0;
 
-    *dflag = ONES;
+    *dflag = ONE;
   }
 
   while (*((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO);
+  *((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO;
+
   *dflag = 0x600D600D;
 
   return 0;

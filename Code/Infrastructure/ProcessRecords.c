@@ -40,7 +40,7 @@
 
 void memcpy_w(void *dest, const void *src, size_t count);
 
-void ProcessRecords(unsigned int *identifiers, int count) {
+void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned int count) {
 
   /*
    * ----------------------------- On the ARM SoC ------------------------------
@@ -84,10 +84,20 @@ void ProcessRecords(unsigned int *identifiers, int count) {
    */
 
   FILE *records_file;
+  unsigned int *distp;
   unsigned int *id;
+  unsigned int *done_flags;
+  unsigned int *dflag;
   void *heap_addr;
   off_t record_offset;
   unsigned int i;
+  unsigned int start = ONE;
+  unsigned int core;
+  unsigned row;
+  unsigned col;
+  unsigned int counts[16];
+  unsigned int modcount;
+  int j;
 
   id = identifiers;
 
@@ -99,24 +109,50 @@ void ProcessRecords(unsigned int *identifiers, int count) {
 
   e_alloc(&membuf, ZERO, 0x02000000);
 
+  done_flags = (unsigned int *) ((void *) membuf.base + DONE_FLAGS_BASE);
   heap_addr = (void *) membuf.base + HEAP_BUFFER_ADDR;
 
-  while (count > FIFTEEN) {
-    for (i = ZERO; i < SIXTEEN; ++i) {
-      record_offset = *id++ * 0x400;
-      lseek(records_file, record_offset, SEEK_SET);
-      fread(heap_addr, 0x400, ONE, records_file);
-      heap_addr += 0x400;
+  for (core = ZERO; core < SIXTEEN; ++core) {
+    dflag = done_flags + core;
+    *dflag = ZERO;
+  }
+
+  modcount = count / 16;
+  core = modcount % 16;
+  for (j = 0; j < 16; ++j) {
+
+
+
+  }
+
+  while (count > 0x000000FF) {
+    for (core = ZERO; core < SIXTEEN; ++core) {
+      for (i = ZERO; i < SIXTEEN; ++i) {
+        if (i == ZERO) printf("Reading record %d, destined for core %d\n", i, core);
+        record_offset = *id++ * 0x400;
+        lseek(records_file, record_offset, SEEK_SET);
+        fread(heap_addr, 0x400, ONE, records_file);
+        heap_addr += 0x400;
+      }
+
+      printf("Starting core %d\n", core);
+      row = core / 4;
+      col = core % 4;
+      e_write(&EpiphanyGpu, row, col, LOCAL_START_FLAG_ADDR, &start, sizeof(unsigned int));
     }
 
-    e_write(&EpiphanyGpu, 
+    distp = (unsigned int *) ((void *) membuf.base + DISTANCE_ARRAYS_BASE);
+    for (core = ZERO; core < SIXTEEN; ++core) {
+      dflag = done_flags + core;
+      while (*dflag == ZERO);
+      *dflag = ZERO;
+      printf("Recording results from core %d\n", core);
+      for (i = ZERO; i < SIXTEEN; ++i) {
+        *distances++ = *distp++;
+      }
+    }
 
-
-    core
-
-
-
-
+    count -= 256;
   }
 
 
