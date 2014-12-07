@@ -8,9 +8,9 @@
  *
  */
 
-#include "ParallellaKNN.h"
-#include <e_lib.h>
+#include "ParallellaKNN_core.h"
 
+/*
 #define	NUM_BANKS			4
 #define	NUM_DMA_CHANNELS		2
 #define	BANK_SIZE			0x2000
@@ -45,6 +45,7 @@
 #define	DMA_START_1			e_dma_start(&dma_desc[1], DMA1)
 #define	DMA_WAIT_0			e_dma_wait(DMA0)
 #define	DMA_WAIT_1			e_dma_wait(DMA1)
+*/
 
 unsigned int hamming_dist(unsigned int *rec);
 

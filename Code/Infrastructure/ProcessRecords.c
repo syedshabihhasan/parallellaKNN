@@ -9,8 +9,8 @@
  */
 
 #include "ParallellaKNN.h"
-#include <e-hal.h>
 
+/*
 #define NUM_BANKS                       4
 #define NUM_DMA_CHANNELS                2
 #define BANK_SIZE                       0x2000
@@ -36,10 +36,11 @@
 #define ONES                            0x7FFFFFFF
 #define H0                              0x0000
 #define DW                              0x0008
+*/
 
 void memcpy_w(void *dest, const void *src, size_t count);
 
-void ProcessRecords(void **addresses, int count) {
+void ProcessRecords(unsigned int *identifiers, int count) {
 
   /*
    * ----------------------------- On the ARM SoC ------------------------------
@@ -82,17 +83,41 @@ void ProcessRecords(void **addresses, int count) {
    *
    */
 
-  void *addr = *addresses;
+  FILE *records_file;
+  unsigned int *id;
+  void *heap_addr;
+  off_t record_offset;
   unsigned int i;
 
-  while (count > 15) {
-    for (i = 0; i < 16; ++i) {
+  id = identifiers;
 
+  if ((records_file = fopen(RECORDS_FILE_NAME, "rb")) == NULL) {
+    fprintf(stderr, "Could not open records file.\n");
+    fflush(stderr);
+    exit(-1);
+  }
 
+  e_alloc(&membuf, ZERO, 0x02000000);
 
+  heap_addr = (void *) membuf.base + HEAP_BUFFER_ADDR;
+
+  while (count > FIFTEEN) {
+    for (i = ZERO; i < SIXTEEN; ++i) {
+      record_offset = *id++ * 0x400;
+      lseek(records_file, record_offset, SEEK_SET);
+      fread(heap_addr, 0x400, ONE, records_file);
+      heap_addr += 0x400;
     }
 
+    e_write(&EpiphanyGpu, 
 
+
+    core
+
+
+
+
+  }
 
 
 
