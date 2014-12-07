@@ -3,12 +3,13 @@
  * ProcessRecords.c
  *
  * Authors: James W Hegeman
- *          Shabih Hasan
+ *          Syed Shabih Hasan
  *          Vivek B Sardeshmukh
  *
  */
 
 #include "ParallellaKNN.h"
+#include "ProcessRecords.h"
 
 /*
 #define	NUM_BANKS			4

@@ -3,7 +3,7 @@
  * RecordXfer_c.c
  *
  * Authors: James W Hegeman
- *          Shabih Hasan
+ *          Syed Shabih Hasan
  *          Vivek B Sardeshmukh
  *
  */

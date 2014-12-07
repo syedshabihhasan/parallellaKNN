@@ -3,7 +3,7 @@
  * ParallellaKNN_core.h
  *
  * Authors: James W Hegeman
- *          Shabih Hasan
+ *          Syed Shabih Hasan
  *          Vivek B Sardeshmukh
  *
  */

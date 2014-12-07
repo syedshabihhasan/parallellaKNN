@@ -3,7 +3,7 @@
  * ParallellaKNN.h
  *
  * Authors: James W Hegeman
- *          Shabih Hasan
+ *          Syed Shabih Hasan
  *          Vivek B Sardeshmukh
  *
  */
@@ -46,6 +46,7 @@
 #define	ONES				0x7FFFFFFF
 #define	H0				0x0000
 #define	DW				0x0008
+#define	EXEC(f)				if (f != E_OK) printf("Uh oh.\n")
 
 /*
  * ----------------------------- On the ARM SoC ------------------------------
@@ -87,8 +88,6 @@
  * 0x6444-0x6447 :      : ID (unsigned int).                            : (Input, Written by ARM)
  *
  */
-
-void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned int count);
 
 extern e_platform_t EpiphanyPlatform;
 extern e_epiphany_t EpiphanyGpu;
