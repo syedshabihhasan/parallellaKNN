@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 
   e_set_host_verbosity(H_D2);
 
-  EXEC(e_load_group("Infrastructure/RecordXfer_c.srec", &EpiphanyGpu, row, col, rows, cols, FALSE));
+  EXEC(e_load_group("Infrastructure/RecordXfer_c.srec", &EpiphanyGpu, row, col, rows, cols, E_FALSE));
 
 
 

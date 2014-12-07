@@ -8,7 +8,7 @@
  *
  */
 
-#include "ParallellaKNN_core.h"
+#include "../ParallellaKNN_core.h"
 
 /*
 #define	NUM_BANKS			4
@@ -95,11 +95,9 @@ int main(void) {
   unsigned int *record;
   unsigned int *countp;
   unsigned int *distp;
-  unsigned int *dummy;
-  void *buffer;
+  unsigned int *dflag;
   void *heap_addr;
   void *dist_addr;
-  void *dflag;
   unsigned int i;
   unsigned int count;
   unsigned int ID;
@@ -110,11 +108,10 @@ int main(void) {
   emem_base = e_emem_config.base;
   ID = *((unsigned int *) LOCAL_ID_ADDR);
 
-  buffer = (void *) ((void *) emem_base + HEAP_BUFFER_ADDR);
   heap_addr = (void *) ((void *) emem_base + HEAP_BUFFER_ADDR + ID * 0x40000);
   dist_addr = (void *) ((void *) emem_base + DISTANCE_ARRAYS_BASE + ID * 0x40);
-  countp = (unsigned int *) ((void *) emem_base + COUNTS_BASE + ID * UNSIGNED_INT_SIZE);
-  dflag = (void *) ((void *) emem_base + DONE_FLAGS_BASE + ID * UNSIGNED_INT_SIZE);
+  countp = (unsigned int *) ((void *) emem_base + COUNTS_BASE + ID * sizeof(unsigned int));
+  dflag = (unsigned int *) ((void *) emem_base + DONE_FLAGS_BASE + ID * sizeof(unsigned int));
 
   while (*((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO);
   *((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO;

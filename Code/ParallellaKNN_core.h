@@ -43,7 +43,7 @@
 #define	DW				0x0008
 #define	DMA0				E_DMA_0
 #define	DMA1				E_DMA_1
-#define	DMA_CONFIG			E_DMA_ENABLE | E_DMA_MASTER | E_DMA_DWORD;
+#define	DMA_CONFIG			E_DMA_ENABLE | E_DMA_MASTER | E_DMA_DWORD
 #define	DMA_SET_0(X, Y, Z, W)		e_dma_set_desc(DMA0, DMA_CONFIG, H0, DW, DW, X, Y, DW, DW, Z, W, &dma_desc[0])
 #define	DMA_SET_1(X, Y, Z, W)		e_dma_set_desc(DMA1, DMA_CONFIG, H0, DW, DW, X, Y, DW, DW, Z, W, &dma_desc[1])
 #define	DMA_START_0			e_dma_start(&dma_desc[0], DMA0)

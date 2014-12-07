@@ -8,7 +8,7 @@
  *
  */
 
-#include "ParallellaKNN.h"
+#include "../ParallellaKNN.h"
 #include "ProcessRecords.h"
 
 /*
@@ -138,7 +138,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
       for (i = ZERO; i < SIXTEEN; ++i) {
         if (i == ZERO) printf("Reading record %d, destined for core %d\n", i, core);
         record_offset = *id++ * 0x400;
-        lseek(records_file, record_offset, SEEK_SET);
+        fseek(records_file, record_offset, SEEK_SET);
         fread(heap_addr, 0x400, ONE, records_file);
         heap_addr += 0x400;
       }
@@ -168,7 +168,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
   for (core = ZERO; core < modcount; ++core) {
     for (i = ZERO; i <= divcount; ++i) {
       record_offset = *id++ * 0x400;
-      lseek(records_file, record_offset, SEEK_SET);
+      fseek(records_file, record_offset, SEEK_SET);
       fread(heap_addr, 0x400, ONE, records_file);
       heap_addr += 0x400;
     }
@@ -181,7 +181,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
   for (core = modcount; core < SIXTEEN; ++core) {
     for (i = ZERO; i < divcount; ++i) {
       record_offset = *id++ * 0x400;
-      lseek(records_file, record_offset, SEEK_SET);
+      fseek(records_file, record_offset, SEEK_SET);
       fread(heap_addr, 0x400, ONE, records_file);
       heap_addr += 0x400;
     }
