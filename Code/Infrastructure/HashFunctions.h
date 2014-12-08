@@ -4,6 +4,7 @@
 #ifndef HASHFUNCTIONS_H
 #define HASHFUNCTIONS_H
 
+#define DEBUG 1
 /*Length of a record in bits*/
 #define RECORD_SIZE 8192
 /*Number of hash functions*/
@@ -12,8 +13,6 @@
 #define HASH_FUNCTION_WIDTH 24
 /*Array holding random index for each hash function*/
 unsigned int HASH_FUNC[MAX_HASH_FUNCTION][HASH_FUNCTION_WIDTH];
-/*mast bits*/
-static unsigned char mask[RECORD_SIZE];
 
 /*init function needs to be called at the begining*/
 void HashFunctionsInit(unsigned int seed);
