@@ -17,11 +17,14 @@ int main(int argc, char* args[]){
     HashFunctionsInit(10);
     for(i = 0; i < 256; i++)
     {
-	    record[i] = UINT_MAX;
+	    record[i] = random();
     }
     for(i = 0; i < HASH_FUNCTION_WIDTH; i++)
-	printf("i = %d\t h = %u\n", i, HASH_FUNC[1][i]);
-    
+	printf("i = %d\t h = %u\t rec = %u\n", i, HASH_FUNC[1][i], record[HASH_FUNC[1][i]/32]);
+
+    for(i = 0; i < 8192; i++) 
+	printf("i = %d\t bit = %u\n", i, (*record & (1 << i)));
+
     printf("%u\n", HashValue(record, 1));
     return 0;
 }

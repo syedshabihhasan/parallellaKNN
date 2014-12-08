@@ -51,6 +51,9 @@ unsigned int HashValue(void *record, unsigned int functionNumber){
     for(i = 0; i < HASH_FUNCTION_WIDTH; i++){
 	if(*(unsigned int*)record & (1 << HASH_FUNC[functionNumber][i])){
 	    hashValue |= 1 << i;
+	    if(DEBUG){
+		fprintf(stderr, "%d is set\n", i); 
+	    }
 	}
     }
     return hashValue;
