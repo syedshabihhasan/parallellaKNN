@@ -3,16 +3,8 @@ function [ nearestNeighbors ] = doKNNSearch( flatFilePath, K )
 %   @author: Syed Shabih Hasan
 
 load(flatFilePath);
-[r,~]  = size(flatFile);
-nearestNeighbors = zeros(r,K);
-parObj = parpool;
-parfor P=1:r
-    disp(sprintf('P=%d',P));
-    nearestNeighbors(P,:) = knnsearch(flatFile,flatFilePath(P,:),'K',K,...
+nearestNeighbors = knnsearch(flatFile,flatFilePath,'K',K,...
                                         'Distance','hamming');
-end
-disp('done!');
-delete(parObj);
 
 end
 
