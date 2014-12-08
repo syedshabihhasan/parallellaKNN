@@ -8,11 +8,13 @@ if -1 == f
     disp('fid = -1, existing');
     exit;
 end
-while ~feof(f)
+for P=1:997747
+    if 0 == mod(P,10000)
+        disp(sprintf('P=%d',P));
+    end
     try
         fwrite(f,P,'int',0,'l');
         fseek(f,1020,0);
-        P = P+1;
     catch err
         disp(sprintf('An error occured at P = %d',P));
         err
