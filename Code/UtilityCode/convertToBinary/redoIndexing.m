@@ -5,10 +5,9 @@ function redoIndexing( binFilePath )
 P=1;
 f = fopen(binFilePath,'r+b');
 
-while 997747 >= P
+for P=1:997747
     fwrite(f,P,'int',0,'l');
     fseek(f,1020,0);
-    P = P + 1;
 end
 
 fclose(f);
