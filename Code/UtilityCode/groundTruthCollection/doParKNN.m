@@ -7,6 +7,7 @@ load(flatFilePath);
 parObj = parpool;
 knnres = zeros(r,K);
 parfor P=1:r
+    disp(sprintf('LoopPos=%d',P));
     knnres(P,:) = knnsearch(flatFile,flatFile(P,:),'K',K,'Distance','hamming');
 end
 delete(parObj);
