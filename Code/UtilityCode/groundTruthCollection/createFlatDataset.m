@@ -28,10 +28,11 @@ parfor P=1:r
 end
 % fclose(f);
 delete(parObj);
-save(sprintf('%s/cellFlat',savePath),'flatFileCell','-v7.3');
+save(sprintf('%s/cellFlat_le',savePath),'flatFileCell','-v7.3');
 disp('Done with parallel job!');
 flatFile = cell2mat(flatFileCell);
-save(sprintf('%s/final_flat',savePath),'flatFile','-v7.3');
+flatFileCell = {};
+save(sprintf('%s/final_flat_le',savePath),'flatFile','-v7.3');
 % for P=1:r
 %     if 0 == mod(P,10000)
 %         disp(sprintf('I am at P=%d',P));
