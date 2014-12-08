@@ -23,8 +23,9 @@ n2h = num2hex(inputDouble);
 binVal = '';
 n = length(n2h);
 hexVals = hexMap(:,1);
-for P=1:n
+for P=n:-2:1
     binVal = strcat(binVal,hexMap(strcmpi(hexVals,n2h(P)),2));
+    binVal = strcat(binVal,hexMap(strcmpi(hexVals,n2h(P-1)),2));
 end
 binVal = binVal{:};
 end
