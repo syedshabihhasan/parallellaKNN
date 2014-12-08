@@ -14,7 +14,8 @@ int main(int argc, char* args[]){
     /*create a 10 byte record*/
     unsigned int record[256];
     int i;
-    HashFunctionsInit(10);
+    //HashFunctionsInit(10);
+    srandom(1);
     for(i = 0; i < 256; i++)
     {
 	    record[i] = random();
