@@ -3,7 +3,7 @@ function [ nearestNeighbors ] = doKNNSearch( flatFilePath, K )
 %   @author: Syed Shabih Hasan
 
 load(flatFilePath);
-nearestNeighbors = knnsearch(flatFile,flatFilePath,'K',K,...
+nearestNeighbors = knnsearch(flatFile,flatFile,'K',K,...
                                         'Distance','hamming');
 
 end
