@@ -18,6 +18,8 @@ def combineBinFiles(combFile, toSaveFile):
             toWrite = '';
             print 'K=',k;
         toWorkWith = fileLine.split(',')[0];
+        if 'error' in toWorkWith or 'skipped' in toWorkWith:
+            continue;
         f_bin = open(toWorkWith,'r');
         toWrite+=f_bin.read();
         f_bin.close();
