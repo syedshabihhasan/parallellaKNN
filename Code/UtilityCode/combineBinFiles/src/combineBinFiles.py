@@ -10,7 +10,7 @@ def combineBinFiles(combFile, toSaveFile):
     except ValueError:
         pass;
     k=1;
-    f = open(toSaveFile,'w');
+    f = open(toSaveFile,'wb');
     toWrite = '';
     for fileLine in allCombs:
         if 0 == k%10000:
@@ -20,7 +20,7 @@ def combineBinFiles(combFile, toSaveFile):
         toWorkWith = fileLine.split(',')[0];
         if 'error' in toWorkWith or 'skipped' in toWorkWith:
             continue;
-        f_bin = open(toWorkWith,'r');
+        f_bin = open(toWorkWith,'rb');
         toWrite+=f_bin.read();
         f_bin.close();
         k+=1;
