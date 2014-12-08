@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
   EXEC(e_open(&EpiphanyGpu, row, col, rows, cols));
   EXEC(e_reset_group(&EpiphanyGpu));
 
-  e_set_host_verbosity(H_D2);
+  //e_set_host_verbosity(H_D2);
 
   EXEC(e_load_group("RecordXfer_c.srec", &EpiphanyGpu, row, col, rows, cols, E_FALSE));
 

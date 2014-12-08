@@ -106,7 +106,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
 
   id = identifiers;
 
-  if ((records_file = fopen("../records.bin", "rb")) == NULL) {
+  if ((records_file = fopen("records.bin", "rb")) == NULL) {
     fprintf(stderr, "Could not open records file.\n");
     fflush(stderr);
     exit(-1);
@@ -122,6 +122,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
   for (core = ZERO; core < SIXTEEN; ++core) {
     dflag = done_flags + core;
     *dflag = ZERO;
+    printf("Wrote %u to address %X\n", ZERO, (unsigned int) dflag);
   }
 
   divcount = count / SIXTEEN;
@@ -132,7 +133,11 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
   for (i = core; i < SIXTEEN; ++i) {
     counts[i] = divcount;
   }
+  for (i = core; i < SIXTEEN; ++i) {
+    printf("counts[%u] = %u\n", i, counts[i]);
+  }
   for (core = ZERO; core < SIXTEEN; ++core) {
+    printf("Writing %u to address %X\n", counts[core], (unsigned int) countp);
     *countp++ = counts[core];
   }
 
@@ -142,6 +147,9 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
 
   printf("Set query record %u in shared memory.\n", *((unsigned int *) query_addr));
   fflush(stdout);
+
+  printf("query = %u\n", query);
+  printf("count = %u\n", count);
 
   while (count > TWOFIFTYSIX) {
     for (core = ZERO; core < SIXTEEN; ++core) {
@@ -176,11 +184,16 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
 
   divcount = count / SIXTEEN;
   modcount = count % SIXTEEN;
+  printf("divcount = %u\n", divcount);
+  printf("modcount = %u\n", modcount);
+  printf("start = %u\n", start);
   for (core = ZERO; core < modcount; ++core) {
     for (i = ZERO; i <= divcount; ++i) {
+      printf("About to read record %u from file offset %u\n", *id, (*id - ONE) * 0x400);
       record_offset = (*id++ - ONE) * 0x400;
       fseek(records_file, record_offset, SEEK_SET);
       fread(heap_addr, 0x400, ONE, records_file);
+      printf("Read record into shared memory address %u\n", (unsigned int) heap_addr);
       heap_addr += 0x400;
     }
     heap_addr += (SIXTEEN - divcount - ONE) * 0x400;
@@ -188,12 +201,15 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
     row = core / 4;
     col = core % 4;
     e_write(&EpiphanyGpu, row, col, LOCAL_START_FLAG_ADDR, &start, sizeof(unsigned int));
+    printf("Wrote start signal (%u) to core %u (%u, %u)\n", start, core, row, col);
   }
   for (core = modcount; core < SIXTEEN; ++core) {
     for (i = ZERO; i < divcount; ++i) {
+      printf("About to read record %u from file offset %u\n", *id, (*id - ONE) * 0x400);
       record_offset = (*id++ - ONE) * 0x400;
       fseek(records_file, record_offset, SEEK_SET);
       fread(heap_addr, 0x400, ONE, records_file);
+      printf("Read record into shared memory address %u\n", (unsigned int) heap_addr);
       heap_addr += 0x400;
     }
     heap_addr += (SIXTEEN - divcount) * 0x400;
@@ -201,7 +217,10 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
     row = core / 4;
     col = core % 4;
     e_write(&EpiphanyGpu, row, col, LOCAL_START_FLAG_ADDR, &start, sizeof(unsigned int));
+    printf("Wrote start signal (%u) to core %u (%u, %u)\n", start, core, row, col);
   }
+
+  printf("About to read distance results\n");
 
   distp = (unsigned int *) ((void *) membuf.base + DISTANCE_ARRAYS_BASE);
   for (core = ZERO; core < SIXTEEN; ++core) {

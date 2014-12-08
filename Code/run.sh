@@ -2,6 +2,9 @@
 
 set -e
 
+sudo sync
+sync
+
 ESDK=$EPIPHANY_HOME
 ELIBS=${ESDK}/tools/host/lib:$LD_LIBRARY_PATH
 EHDF=$EPIPHANY_HDF
