@@ -13,10 +13,10 @@ def combineBinFiles(combFile, toSaveFile):
     f = open(toSaveFile,'w');
     toWrite = '';
     for fileLine in allCombs:
-        if 10000 == k:
+        if 0 == k%10000:
             f.write(toWrite);
             toWrite = '';
-            k = 0;
+            print 'K=',k;
         toWorkWith = fileLine.split(',')[0];
         f_bin = open(toWorkWith,'r');
         toWrite+=f_bin.read();
