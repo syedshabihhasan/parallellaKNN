@@ -11,9 +11,11 @@
 #define MAX_HASH_FUNCTION 32
 /*Widht of a hash function - these many random index are used*/
 #define HASH_FUNCTION_WIDTH 24
-/*Array holding random index for each hash function*/
+/*Array holding random index for each hash function - hard coded*/
 extern unsigned int HASH_FUNC[MAX_HASH_FUNCTION][HASH_FUNCTION_WIDTH]; 
-/*init function needs to be called at the begining*/
+/*init function needs to be called at the begining*
+ *call this function only if you don't want to use hard-coded hash functions 
+ */
 void HashFunctionsInit(unsigned int seed);
 
 /*returns hashed value of records*/
