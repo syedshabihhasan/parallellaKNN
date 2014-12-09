@@ -81,9 +81,15 @@ void HashFunctionsInit(unsigned int seed){
 unsigned int HashValue(void *record, unsigned int functionNumber){
     unsigned int hashValue;
     int i;
+    unsigned int bindex; 
+    unsigned int windex;
+    unsigned int index;
     hashValue = 0;
     for(i = 0; i < HASH_FUNCTION_WIDTH; i++){
-	if(*(unsigned int*)record & (1 << HASH_FUNC[functionNumber][i])){
+	bindex = HASH_FUNC[functionNumber][i];
+	windex = bindex / 32; 
+	index = bindex % 32; 
+	if(*(unsigned int*)(record + windex) & (1 << index)){
 	    hashValue |= 1 << i;
 	    if(DEBUG){
 		fprintf(stderr, "%d is set\n", i); 

@@ -16,7 +16,8 @@ int main(int argc, char* args[]){
     int i;
     //HashFunctionsInit(10);
     srandom(1);
-    for(i = 0; i < 256; i++)
+    record[0] = 0;
+    for(i = 1; i < 256; i++)
     {
 	    record[i] = random();
     }
@@ -24,7 +25,7 @@ int main(int argc, char* args[]){
 	printf("i = %d\t h = %u\t rec = %u\n", i, HASH_FUNC[1][i], record[HASH_FUNC[1][i]/32]);
 
     for(i = 0; i < 8192; i++) 
-	printf("i = %d\t bit = %u\n", i, (*record & (1 << i)));
+	printf("i = %d\t bit = %u\n", i, (*(record + i/32) & (1 << i)));
 
     printf("%u\n", HashValue(record, 1));
     return 0;
