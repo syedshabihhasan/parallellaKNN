@@ -1,6 +1,6 @@
 /*JWHSSHVBSGPLHERE*/
 /*
- * ParallellaKNN.h
+ * ParallellaKNN_core.h
  *
  * Authors: James W Hegeman
  *          Shabih Hasan
@@ -8,14 +8,13 @@
  *
  */
 
-/* This is the host-side include file */
+/* This is the device-side header file */
 
-#ifndef	__PARALLELLA_KNN_H__
-#define	__PARALLELLA_KNN_H__
+#ifndef	__PARALLELLA_KNN_CORE_H__
+#define	__PARALLELLA_KNN_CORE_H__
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <e-hal.h>
+#include <e-lib.h>
 
 #define NUM_BANKS                       4
 #define NUM_DMA_CHANNELS                2
@@ -42,6 +41,15 @@
 #define ONES                            0x7FFFFFFF
 #define H0                              0x0000
 #define DW                              0x0008
+#define DMA0                            E_DMA_0
+#define DMA1                            E_DMA_1
+#define DMA_CONFIG                      E_DMA_ENABLE | E_DMA_MASTER | E_DMA_DWORD;
+#define DMA_SET_0(X, Y, Z, W)           e_dma_set_desc(DMA0, DMA_CONFIG, H0, DW, DW, X, Y, DW, DW, Z, W, &dma_desc[0])
+#define DMA_SET_1(X, Y, Z, W)           e_dma_set_desc(DMA1, DMA_CONFIG, H0, DW, DW, X, Y, DW, DW, Z, W, &dma_desc[1])
+#define DMA_START_0                     e_dma_start(&dma_desc[0], DMA0)
+#define DMA_START_1                     e_dma_start(&dma_desc[1], DMA1)
+#define DMA_WAIT_0                      e_dma_wait(DMA0)
+#define DMA_WAIT_1                      e_dma_wait(DMA1)
 
 /*
  * ----------------------------- On the ARM SoC ------------------------------
@@ -83,10 +91,5 @@
  * 0x6444-0x6447 :      : ID (unsigned int).                            : (Input, Written by ARM)
  *
  */
-
-void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned int count);
-
-extern e_platform_t EpiphanyPlatform;
-extern e_epiphany_t EpiphanyGpu;
 
 #endif

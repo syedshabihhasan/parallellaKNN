@@ -8,9 +8,9 @@
  *
  */
 
-#include "ParallellaKNN.h"
-#include <e_lib.h>
+#include "ParallellaKNN_core.h"
 
+/*
 #define	NUM_BANKS			4
 #define	NUM_DMA_CHANNELS		2
 #define	BANK_SIZE			0x2000
@@ -45,6 +45,7 @@
 #define	DMA_START_1			e_dma_start(&dma_desc[1], DMA1)
 #define	DMA_WAIT_0			e_dma_wait(DMA0)
 #define	DMA_WAIT_1			e_dma_wait(DMA1)
+*/
 
 unsigned int hamming_dist(unsigned int *rec);
 
@@ -151,7 +152,7 @@ int main(void) {
     DMA_START_0;
     DMA_WAIT_0;
 
-    *dflag = ONES;
+    *dflag = ONE;
     count -= SIXTEEN;
 
     while (*((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO);
@@ -184,7 +185,7 @@ int main(void) {
     DMA_START_0;
     DMA_WAIT_0;
 
-    *dflag = ONES;
+    *dflag = ONE;
 
   } else if (count > ZERO) {
     DMA_SET_0(0x0020, count * 0x0004, heap_addr, (void *) LOCAL_BANK_1_ADDR);
@@ -202,10 +203,12 @@ int main(void) {
     DMA_START_0;
     DMA_WAIT_0;
 
-    *dflag = ONES;
+    *dflag = ONE;
   }
 
   while (*((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO);
+  *((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO;
+
   *dflag = 0x600D600D;
 
   return 0;
