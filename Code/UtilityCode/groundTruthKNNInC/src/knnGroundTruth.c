@@ -10,7 +10,8 @@
 #include "knnHeader.h"
 
 
-unsigned int newRecord[MAX_RECORD*RECORD_LEN];
+//unsigned int newRecord[MAX_RECORD*RECORD_LEN];
+unsigned int *newRecord;
 
 unsigned int distanceTable[REC_TO_LOOK][K];
 int hammingDistance(unsigned int recordVal[RECORD_LEN], unsigned int queryVal[RECORD_LEN]);
@@ -20,28 +21,31 @@ unsigned int topElements[K][2];
 
 int main(){
 	char filepath[] = ""; // file path goes here
-
+	newRecord = (unsigned int *) malloc(sizeof(unsigned int)*(MAX_RECORD*RECORD_LEN));
+	unsigned int *recHead = newRecord;
 	FILE *fp = fopen(filepath, "r");
 	printf("Reading File\n");
-	for(unsigned int i=ZERO; i<MAX_RECORD*RECORD_LEN; i++){
-//		printf("*1*\n");
-		unsigned int temp;
-//		printf("*2*\n");
-		fread(&temp,sizeof(unsigned int),1,fp);
-//		printf("*3*\n");
-		newRecord[i] = temp;
-//		printf("*4*\n");
-	}
+//	for(unsigned int i=ZERO; i<MAX_RECORD*RECORD_LEN; i++){
+////		printf("*1*\n");
+//		unsigned int temp;
+////		printf("*2*\n");
+//		fread(&temp,sizeof(unsigned int),1,fp);
+////		printf("*3*\n");
+//		newRecord[i] = temp;
+////		printf("*4*\n");
+//	}
+	fread(newRecord, sizeof(unsigned int), MAX_RECORD*RECORD_LEN,fp);
 	fclose(fp);
+	newRecord = recHead;
 	printf("Done!\n");
 
-	for(int i=ZERO; i<MAX_RECORD; i++){
-		int recStart = i*RECORD_LEN;
-		for(int j=recStart; j< recStart+RECORD_LEN; j++){
+//	for(int i=ZERO; i<MAX_RECORD; i++){
+//		int recStart = i*RECORD_LEN;
+//		for(int j=recStart; j< recStart+RECORD_LEN; j++){
 //			printf("%x ",newRecord[j]);
-		}
+//		}
 //		printf("\n\n");
-	}
+//	}
 	for(int i=ZERO; i<REC_TO_LOOK; i++){
 		// get query record
 		unsigned int queryRecord[RECORD_LEN];
