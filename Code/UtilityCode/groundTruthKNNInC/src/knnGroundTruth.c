@@ -12,7 +12,7 @@
 
 unsigned int newRecord[MAX_RECORD*RECORD_LEN];
 
-unsigned int distanceTable[MAX_RECORD][K];
+unsigned int distanceTable[REC_TO_LOOK][K];
 int hammingDistance(unsigned int recordVal[RECORD_LEN], unsigned int queryVal[RECORD_LEN]);
 void checkTopElements(int idx, int hammDist);
 void writeDistanceTable(char *filename);
@@ -42,17 +42,14 @@ int main(){
 		}
 //		printf("\n\n");
 	}
-	int qC = 0;
-	for(int i=ZERO; i<MAX_RECORD; i++){
-		int rC = 0;
+	for(int i=ZERO; i<REC_TO_LOOK; i++){
 		// get query record
 		unsigned int queryRecord[RECORD_LEN];
 		int recStart = i*RECORD_LEN;
 		for(int j=recStart; j< recStart+RECORD_LEN; j++){
 			queryRecord[j-recStart] = newRecord[j];
 		}
-//		printf("QC = %d\n",qC);
-		qC++;
+//		printf("QC = %d\n",queryRecord[0]);
 		//initialize the topElements matrix
 		for(int i=ZERO; i<K; i++){
 			topElements[i][0] = 9999;
@@ -66,17 +63,16 @@ int main(){
 				recordVal[l-recStart_inner] = newRecord[l];
 			}
 			int dist = hammingDistance(recordVal, queryRecord);
-//			printf("RC = %d\n",rC);
+//			printf("RC = %d\n",recordVal[0]);
 //			printf("HDist = %d\n",dist);
 			// once the hamming distance is found, see if it belongs to the top K elements
 			if(dist < topElements[K-1][1]){
-				checkTopElements(rC, dist);
+				checkTopElements(recordVal[0], dist);
 			}
-			rC++;
 		}
 		// after each query point has gone through all the data, write the results to the main table
 		for(int i=ZERO; i<K; i++){
-			distanceTable[qC-1][i] = topElements[i][0];
+			distanceTable[queryRecord[0]-1][i] = topElements[i][0];
 			//printf("%d ",topElements[i][1]);
 		}
 
@@ -88,13 +84,13 @@ int main(){
 void writeDistanceTable(char *filename){
 	printf("I started writing to file\n");
 	FILE *fp = fopen(filename, "w");
-	for(int i=ZERO; i<MAX_RECORD; i++){
+	for(int i=ZERO; i<REC_TO_LOOK; i++){
 		for(int j=ZERO; j<K; j++){
-			printf("%d ",distanceTable[i][j]);
+//			printf("%d ",distanceTable[i][j]);
 			unsigned int temp = distanceTable[i][j];
 			fwrite(&temp,sizeof(unsigned int),1,fp);
 		}
-		printf("\n");
+//		printf("\n");
 	}
 	fclose(fp);
 	printf("Done writing to file\n");
@@ -107,7 +103,7 @@ void checkTopElements(int idx, int hammDist){
 				topElements[j][0] = topElements[j-1][0];
 				topElements[j][1] = topElements[j-1][1];
 			}
-			topElements[i][0] = idx+1;
+			topElements[i][0] = idx;
 			topElements[i][1] = hammDist;
 			break;
 		}
