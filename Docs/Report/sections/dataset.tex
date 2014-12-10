@@ -1,0 +1,56 @@
+\section{Dataset}
+\label{sec:dataset}
+\subsection{Original Dataset}
+\label{subsec: meth_orig_dataset}
+We used the Million Song Dataset \cite{msd01} for performing the KNN. 
+The dataset consisted of 1 million files, each containing audio features as well as metadata of a unique song, as shown in Table \ref{table:field_msd_rec}. 
+The size of the dataset was 300GB. 
+For our KNN search we limited our feature set to audio features listed in Table \ref{table:field_msd_rec} in addition to a few others. 
+Our decision to ignore artist metadata was motivated by the idea that an artist may perform songs that can be placed in different genres, songs belonging to different genres would have different audio features but the artist information would be the same and the artist specific features can lead us to picking incorrect neighbours.
+\begin{table}
+\begin{center}
+\begin{tabular}{| l | l |}
+\hline
+\textbf{Feature Type} & \textbf{Feature Names} \\
+\hline
+Artist metadata & \texttt{artist\_id,} \\
+ & \texttt{artist\_name}\\
+ & \texttt{artist\_latitude}\\
+ & \texttt{artist\_terms}\\
+\hline
+Song's audio features & \texttt{segments\_pitches}\\
+ & \texttt{sections\_confidence}\\
+ & \texttt{key}\\
+ & \texttt{segments\_timbre}\\
+\hline
+\end{tabular}
+\caption{Small subset of the fields in each song record}
+\label{table:field_msd_rec}
+\end{center}
+\end{table}
+
+\subsection{Dataset Reduction}
+\label{subsec: meth_dataset_reduc}
+Before we processed the data there were two issues that needed to be handled:
+\begin{enumerate}
+\item The original dataset was very large to be processed on a single Parallella board which possessed 1 GB of main memory and 8 GB of solid state secondary memory.
+\item A few of the audio features selected were of variable length.
+\end{enumerate}
+Variable length features were converted to constant length by calculating summary statistics of them. The variable length features and statistics extracted are shown in Table \ref{table:varLenFeature_stats}. Extraction of summary statistics coupled with using only audio features helped us significantly reduce the size of the dataset. Each song was reduced from approximate 300 KB to a 1 KB record. All the records were stored in a contiguous binary file.
+\begin{table}
+\begin{center}
+\begin{tabular}{| l | l |}
+\hline
+\textbf{Features} & Statistics Extracted \\
+\hline
+\texttt{segments\_timbre}, & min, max, mean\\
+\texttt{segments\_pitch}, & median, standard deviation\\
+\texttt{segments\_confidence} & \\
+\hline
+\end{tabular}
+\caption{Variable length features and statistics extracted over them}
+\label{table:varLenFeature_stats}
+\end{center}
+\end{table}
+
+\textbf{\underline{Key Observation}: } \textit{We reduced the dataset size from 300 GB to approximately 1 GB by careful selection of useful features and standardizing the length of each variable length feature by using summary statistics}.
