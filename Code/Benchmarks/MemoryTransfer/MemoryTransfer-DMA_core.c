@@ -74,7 +74,7 @@ int main(void) {
     }
   }
 
-  *flag = (unsigned int) e_get_coreid();
+  *flag = (unsigned int) 0x11111111;
   //*flag = (unsigned int) sizeof(e_dma_desc_t);
 
   return 0;

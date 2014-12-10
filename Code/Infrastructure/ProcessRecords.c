@@ -40,9 +40,10 @@
 #define	DW				0x0008
 */
 
-void memcpy_w(void *dest, const void *src, size_t count);
+/*void memcpy_w(void *dest, const void *src, size_t count);*/
+unsigned int hamming_dist(unsigned int *rec, unsigned int *query);
 
-void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned int count, unsigned int query) {
+void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned int count, unsigned int query, unsigned int shutdown) {
 
   /*
    * ----------------------------- On the ARM SoC ------------------------------
@@ -87,6 +88,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
 
   e_mem_t membuf;
   FILE *records_file;
+  unsigned int *dist_base;
   unsigned int *distp;
   unsigned int *done_flags;
   unsigned int *dflag;
@@ -114,6 +116,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
 
   e_alloc(&membuf, ZERO, 0x02000000);
 
+  dist_base = (unsigned int *) ((void *) membuf.base + DISTANCE_ARRAYS_BASE);
   done_flags = (unsigned int *) ((void *) membuf.base + DONE_FLAGS_BASE);
   countp = (unsigned int *) ((void *) membuf.base + COUNTS_BASE);
   heap_addr = (void *) membuf.base + HEAP_BUFFER_ADDR;
@@ -122,7 +125,8 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
   for (core = ZERO; core < SIXTEEN; ++core) {
     dflag = done_flags + core;
     *dflag = ZERO;
-    printf("Wrote %u to address %X\n", ZERO, (unsigned int) dflag);
+    //printf("Wrote %u to address %X\n", ZERO, (unsigned int) dflag);
+    //fflush(stdout);
   }
 
   divcount = count / SIXTEEN;
@@ -133,11 +137,12 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
   for (i = core; i < SIXTEEN; ++i) {
     counts[i] = divcount;
   }
-  for (i = core; i < SIXTEEN; ++i) {
+  /*for (i = ZERO; i < SIXTEEN; ++i) {
     printf("counts[%u] = %u\n", i, counts[i]);
-  }
+    fflush(stdout);
+  }*/
   for (core = ZERO; core < SIXTEEN; ++core) {
-    printf("Writing %u to address %X\n", counts[core], (unsigned int) countp);
+    //printf("Writing %u to address %X\n", counts[core], (unsigned int) countp);
     *countp++ = counts[core];
   }
 
@@ -145,35 +150,34 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
   fseek(records_file, record_offset, SEEK_SET);
   fread(query_addr, 0x400, ONE, records_file);
 
-  printf("Set query record %u in shared memory.\n", *((unsigned int *) query_addr));
-  fflush(stdout);
-
-  printf("query = %u\n", query);
-  printf("count = %u\n", count);
+  //printf("Set query record %u in shared memory.\n", *((unsigned int *) query_addr));
+  //fflush(stdout);
+  //printf("query = %u\n", query);
+  //printf("count = %u\n", count);
 
   while (count > TWOFIFTYSIX) {
     for (core = ZERO; core < SIXTEEN; ++core) {
       for (i = ZERO; i < SIXTEEN; ++i) {
-        if (i == ZERO) printf("Reading record %d, destined for core %d\n", i, core);
+        //if (i == ZERO) printf("Reading record %d, destined for core %d\n", i, core);
         record_offset = (*id++ - ONE) * 0x400;
         fseek(records_file, record_offset, SEEK_SET);
         fread(heap_addr, 0x400, ONE, records_file);
         heap_addr += 0x400;
       }
 
-      printf("Starting core %d\n", core);
+      //printf("Starting core %u\n", core);
       row = core / 4;
       col = core % 4;
       e_write(&EpiphanyGpu, row, col, LOCAL_START_FLAG_ADDR, &start, sizeof(unsigned int));
     }
     fflush(stdout);
 
-    distp = (unsigned int *) ((void *) membuf.base + DISTANCE_ARRAYS_BASE);
     for (core = ZERO; core < SIXTEEN; ++core) {
+      distp = dist_base + core * SIXTEEN;
       dflag = done_flags + core;
       while (*dflag == ZERO);
       *dflag = ZERO;
-      printf("Recording results from core %d\n", core);
+      //printf("Recording results from core %d\n", core);
       for (i = ZERO; i < SIXTEEN; ++i) {
         *distances++ = *distp++;
       }
@@ -184,16 +188,17 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
 
   divcount = count / SIXTEEN;
   modcount = count % SIXTEEN;
-  printf("divcount = %u\n", divcount);
-  printf("modcount = %u\n", modcount);
-  printf("start = %u\n", start);
+  //printf("divcount = %u\n", divcount);
+  //printf("modcount = %u\n", modcount);
+  //printf("start = %u\n", start);
   for (core = ZERO; core < modcount; ++core) {
     for (i = ZERO; i <= divcount; ++i) {
-      printf("About to read record %u from file offset %u\n", *id, (*id - ONE) * 0x400);
+      //printf("About to read record %u from file offset %u\n", *id, (*id - ONE) * 0x400);
       record_offset = (*id++ - ONE) * 0x400;
       fseek(records_file, record_offset, SEEK_SET);
       fread(heap_addr, 0x400, ONE, records_file);
-      printf("Read record into shared memory address %u\n", (unsigned int) heap_addr);
+      //printf("Read record into shared memory address %u\n", (unsigned int) heap_addr);
+      printf("Hamming distance is %u\n", hamming_dist(heap_addr, query_addr));
       heap_addr += 0x400;
     }
     heap_addr += (SIXTEEN - divcount - ONE) * 0x400;
@@ -201,15 +206,16 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
     row = core / 4;
     col = core % 4;
     e_write(&EpiphanyGpu, row, col, LOCAL_START_FLAG_ADDR, &start, sizeof(unsigned int));
-    printf("Wrote start signal (%u) to core %u (%u, %u)\n", start, core, row, col);
+    //printf("Wrote start signal (%u) to core %u (%u, %u)\n", start, core, row, col);
   }
   for (core = modcount; core < SIXTEEN; ++core) {
     for (i = ZERO; i < divcount; ++i) {
-      printf("About to read record %u from file offset %u\n", *id, (*id - ONE) * 0x400);
+      //printf("About to read record %u from file offset %u\n", *id, (*id - ONE) * 0x400);
       record_offset = (*id++ - ONE) * 0x400;
       fseek(records_file, record_offset, SEEK_SET);
       fread(heap_addr, 0x400, ONE, records_file);
-      printf("Read record into shared memory address %u\n", (unsigned int) heap_addr);
+      //printf("Read record into shared memory address %X\n", (unsigned int) heap_addr);
+      printf("Hamming distance is %u\n", hamming_dist(heap_addr, query_addr));
       heap_addr += 0x400;
     }
     heap_addr += (SIXTEEN - divcount) * 0x400;
@@ -217,17 +223,24 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
     row = core / 4;
     col = core % 4;
     e_write(&EpiphanyGpu, row, col, LOCAL_START_FLAG_ADDR, &start, sizeof(unsigned int));
-    printf("Wrote start signal (%u) to core %u (%u, %u)\n", start, core, row, col);
+    //printf("Wrote start signal (%u) to core %u (%u, %u)\n", start, core, row, col);
   }
 
-  printf("About to read distance results\n");
+  //printf("About to read distance results\n");
 
-  distp = (unsigned int *) ((void *) membuf.base + DISTANCE_ARRAYS_BASE);
   for (core = ZERO; core < SIXTEEN; ++core) {
+    distp = dist_base + core * SIXTEEN;
     dflag = done_flags + core;
+    //printf("Going to be reading done flag at address %X\n", (unsigned int) dflag);
     while (*dflag == ZERO);
+    /*while (*dflag == ZERO) {
+      printf("Sleeping while waiting for core %u...\n", core);
+      fflush(stdout);
+      usleep(500000);
+    }*/
     *dflag = ZERO;
-    printf("Recording results from core %d\n", core);
+    //printf("Recording results from core %d\n", core);
+    //printf("Distance result: %u\n", *distp);
     if (core < modcount) {
       for (i = ZERO; i <= divcount; ++i) {
         *distances++ = *distp++;
@@ -239,6 +252,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
     }
   }
 
+  if (shutdown == ONE) start = EIGHT;
   for (core = ZERO; core < SIXTEEN; ++core) {
     row = core / 4;
     col = core % 4;
@@ -255,6 +269,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
   return;
 }
 
+/*
 void memcpy_w(void *dest, const void *src, size_t count) {
 
   unsigned int *tmp_dest = (unsigned int *) dest;
@@ -267,3 +282,24 @@ void memcpy_w(void *dest, const void *src, size_t count) {
 
   return;
 }
+*/
+
+unsigned int hamming_dist(unsigned int *rec, unsigned int *query) {
+
+  unsigned int d;
+  unsigned int j;
+  unsigned int dist = ZERO;
+
+  rec++;
+  query++;
+  for (j = ONE; j < WORDS_PER_RECORD; ++j) {
+    d = *rec++ ^ *query++;
+    while (d > ZERO) {
+      dist += d & ONE;
+      d >>= 1;
+    }
+  }
+
+  return dist;
+}
+
