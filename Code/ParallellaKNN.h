@@ -3,45 +3,50 @@
  * ParallellaKNN.h
  *
  * Authors: James W Hegeman
- *          Shabih Hasan
+ *          Syed Shabih Hasan
  *          Vivek B Sardeshmukh
  *
  */
 
 /* This is the host-side include file */
 
-#ifndef	__PARALLELLA_KNN_H__
-#define	__PARALLELLA_KNN_H__
+#ifndef __PARALLELLA_KNN_H__
+#define __PARALLELLA_KNN_H__
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/time.h>
+#include <unistd.h>
 #include <e-hal.h>
 
-#define NUM_BANKS                       4
-#define NUM_DMA_CHANNELS                2
-#define BANK_SIZE                       0x2000
-#define WORDS_PER_RECORD                0x0100
-#define LOCAL_BANK_0_ADDR               0x0000
-#define LOCAL_BANK_1_ADDR               0x2000
-#define LOCAL_BANK_2_ADDR               0x4000
-#define LOCAL_BANK_3_ADDR               0x6000
-#define LOCAL_QUERY_RECORD_ADDR         0x6000
-#define LOCAL_DISTANCE_ARRAY_ADDR       0x6400
-#define LOCAL_START_FLAG_ADDR           0x6440
-#define LOCAL_ID_ADDR                   0x6444
-#define HEAP_BUFFER_ADDR                0x01000000
-#define QUERY_RECORD_ADDR               0x01FFF000
-#define DISTANCE_ARRAYS_BASE            0x01FFF400
-#define COUNTS_BASE                     0x01FFF800
-#define DONE_FLAGS_BASE                 0x01FFF840
-#define ZERO                            0x00000000
-#define ONE                             0x00000001
-#define EIGHT                           0x00000008
-#define FIFTEEN                         0x0000000F
-#define SIXTEEN                         0x00000010
-#define ONES                            0x7FFFFFFF
-#define H0                              0x0000
-#define DW                              0x0008
+#define	NUM_BANKS			4
+#define	NUM_DMA_CHANNELS		2
+#define	BANK_SIZE			0x2000
+#define	WORDS_PER_RECORD		0x0100
+#define	LOCAL_BANK_0_ADDR		0x0000
+#define	LOCAL_BANK_1_ADDR		0x2000
+#define	LOCAL_BANK_2_ADDR		0x4000
+#define	LOCAL_BANK_3_ADDR		0x6000
+#define	LOCAL_QUERY_RECORD_ADDR		0x6000
+#define	LOCAL_DISTANCE_ARRAY_ADDR	0x6400
+#define	LOCAL_START_FLAG_ADDR		0x6440
+#define	LOCAL_ID_ADDR			0x6444
+#define	HEAP_BUFFER_ADDR		0x01000000
+#define	QUERY_RECORD_ADDR		0x01FFF000
+#define	DISTANCE_ARRAYS_BASE		0x01FFF400
+#define	COUNTS_BASE			0x01FFF800
+#define	DONE_FLAGS_BASE			0x01FFF840
+#define	ZERO				0x00000000
+#define	ONE				0x00000001
+#define	EIGHT				0x00000008
+#define	FIFTEEN				0x0000000F
+#define	SIXTEEN				0x00000010
+#define	TWOFIFTYSIX			0x00000100
+#define	ONES				0x7FFFFFFF
+#define	H0				0x0000
+#define	DW				0x0008
+#define	EXEC(f)				if (f != E_OK) printf("Uh oh.\n")
 
 /*
  * ----------------------------- On the ARM SoC ------------------------------
@@ -83,8 +88,6 @@
  * 0x6444-0x6447 :      : ID (unsigned int).                            : (Input, Written by ARM)
  *
  */
-
-void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned int count);
 
 extern e_platform_t EpiphanyPlatform;
 extern e_epiphany_t EpiphanyGpu;
