@@ -55,7 +55,7 @@ int cmpfn(const void *a, const void *b)
 }
 
 unsigned int getRandomIndex(unsigned int min, unsigned int max){
-    int r;
+    unsigned int r;
     const unsigned int range = max - min;
     const unsigned int buckets = RAND_MAX / range;
     const unsigned int limit = buckets * range;
@@ -80,16 +80,18 @@ void HashFunctionsInit(unsigned int seed){
 
 unsigned int HashValue(void *record, unsigned int functionNumber){
     unsigned int hashValue;
-    int i;
+    unsigned int i;
     unsigned int bindex; 
     unsigned int windex;
     unsigned int index;
+    void *whereisThisBit;
     hashValue = 0;
     for(i = 0; i < HASH_FUNCTION_WIDTH; i++){
 	bindex = HASH_FUNC[functionNumber][i];
 	windex = bindex / 32; 
 	index = bindex % 32; 
-	if(*(unsigned int*)(record + windex) & (1 << index)){
+	whereisThisBit = record + windex*4;
+	if(*(unsigned int*)whereisThisBit & (1 << index)){
 	    hashValue |= 1 << i;
 	    if(DEBUG){
 		fprintf(stderr, "%d is set\n", i); 

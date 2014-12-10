@@ -21,6 +21,7 @@ void HashFunctionsInit(unsigned int seed);
 /*returns hashed value of records*/
 unsigned int HashValue(void *record, unsigned int functionNumber);
 
+unsigned int getRandomIndex(unsigned int min, unsigned int max);
 
 #endif /* ifndef HASHFUNCTIONS_H */
 
