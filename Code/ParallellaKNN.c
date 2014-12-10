@@ -88,12 +88,12 @@ int main(int argc, char *argv[]) {
 
   for (query = 0x1; query < 0x100; ++query) {
     ProcessRecords(distances, identifiers, count, query, ZERO);
-    for (i = 0; i < count; ++i) printf("%u\n", *(distances + i));
+    //for (i = 0; i < count; ++i) printf("%u\n", *(distances + i));
       //printf("Distance between query record (%u) and record %u is %u\n", query, *(identifiers + i), *(distances + i));
   }
   query = 0x100;
   ProcessRecords(distances, identifiers, count, query, ONE);
-  for (i = 0; i < count; ++i) printf("%u\n", *(distances + i));
+  //for (i = 0; i < count; ++i) printf("%u\n", *(distances + i));
     //printf("Distance between query record (%u) and record %u is %u\n", query, *(identifiers + i), *(distances + i));
 
   clock_gettime(CLOCK_MONOTONIC, &t_end);
