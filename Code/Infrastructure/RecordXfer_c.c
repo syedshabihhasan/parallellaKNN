@@ -114,12 +114,13 @@ int main(void) {
   ID = *((unsigned int *) LOCAL_ID_ADDR);
 
   query_addr = (void *) ((void *) emem_base + QUERY_RECORD_ADDR);
-  heap_addr = (void *) ((void *) emem_base + HEAP_BUFFER_ADDR + ID * 0x4000);
   dist_addr = (void *) ((void *) emem_base + DISTANCE_ARRAYS_BASE + ID * 0x40);
   countp = (unsigned int *) ((void *) emem_base + COUNTS_BASE + ID * sizeof(unsigned int));
   dflag = (unsigned int *) ((void *) emem_base + DONE_FLAGS_BASE + ID * sizeof(unsigned int));
 
   while (1) {
+    heap_addr = (void *) ((void *) emem_base + HEAP_BUFFER_ADDR + ID * 0x4000);
+
     while (*sflag == ZERO);
     *sflag = ZERO;
 
@@ -148,19 +149,19 @@ int main(void) {
       record = (unsigned int *) LOCAL_BANK_2_ADDR;
       DMA_WAIT_1;
       for (i = ZERO; i < EIGHT; ++i) {
-      *distp++ = hamming_dist(record);
-      record += WORDS_PER_RECORD;
-    }
+        *distp++ = hamming_dist(record);
+        record += WORDS_PER_RECORD;
+      }
 
-    DMA_SET_0(0x0008, 0x0001, (void *) LOCAL_DISTANCE_ARRAY_ADDR, dist_addr);
-    DMA_START_0;
-    heap_addr += 0x40000;
-    DMA_WAIT_0;
+      DMA_SET_0(0x0008, 0x0001, (void *) LOCAL_DISTANCE_ARRAY_ADDR, dist_addr);
+      DMA_START_0;
+      heap_addr += 0x40000;
+      DMA_WAIT_0;
 
-    *dflag = ONE;
-    count -= SIXTEEN;
+      *dflag = ONE;
+      count -= SIXTEEN;
 
-    while (*sflag == ZERO);
+      while (*sflag == ZERO);
       *sflag = ZERO;
     }
 

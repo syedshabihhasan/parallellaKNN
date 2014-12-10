@@ -13,6 +13,8 @@
 
 e_platform_t EpiphanyPlatform;
 e_epiphany_t EpiphanyGpu;
+e_mem_t membuf;
+FILE *records_file;
 
 int main(int argc, char *argv[]) {
 
@@ -21,14 +23,16 @@ int main(int argc, char *argv[]) {
   unsigned int count;
   unsigned int query;
   unsigned int core;
-  unsigned int readbuf;
+  //unsigned int readbuf;
   unsigned int i;
   unsigned row;
   unsigned col;
   unsigned rows;
   unsigned cols;
+  struct timespec t_start;
+  struct timespec t_end;
 
-  count = 0xA;
+  count = 0x100;
   distances = (unsigned int *) malloc(count * 0x4);
   identifiers = (unsigned int *) malloc(count * 0x4);
 
@@ -58,8 +62,9 @@ int main(int argc, char *argv[]) {
     e_write(&EpiphanyGpu, row, col, LOCAL_ID_ADDR, &core, sizeof(unsigned int));
   }
 
-  usleep(100000);
+  //usleep(100000);
 
+/*
   for (core = 0; core < SIXTEEN; ++core) {
     row = core / 4;
     col = core % 4;
@@ -67,21 +72,41 @@ int main(int argc, char *argv[]) {
     printf("Successfully wrote ID to core %u\n", readbuf);
   }
   fflush(stdout);
+*/
+
+  e_alloc(&membuf, ZERO, 0x02000000);
+
+  if ((records_file = fopen("records.bin", "rb")) == NULL) {
+    fprintf(stderr, "Could not open records file.\n");
+    fflush(stderr);
+    exit(-1);
+  }
 
   EXEC(e_start_group(&EpiphanyGpu));
 
-  for (query = 0x1; query < 0xA; ++query) {
-    ProcessRecords(distances, identifiers, count, query, ZERO);
-  }
-  query = 0xA;
-  ProcessRecords(distances, identifiers, count, query, ONE);
+  clock_gettime(CLOCK_MONOTONIC, &t_start);
 
+  for (query = 0x1; query < 0x100; ++query) {
+    ProcessRecords(distances, identifiers, count, query, ZERO);
+    for (i = 0; i < count; ++i) printf("%u\n", *(distances + i));
+      //printf("Distance between query record (%u) and record %u is %u\n", query, *(identifiers + i), *(distances + i));
+  }
+  query = 0x100;
+  ProcessRecords(distances, identifiers, count, query, ONE);
+  for (i = 0; i < count; ++i) printf("%u\n", *(distances + i));
+    //printf("Distance between query record (%u) and record %u is %u\n", query, *(identifiers + i), *(distances + i));
+
+  clock_gettime(CLOCK_MONOTONIC, &t_end);
+  if (t_end.tv_nsec < t_start.tv_nsec)
+    fprintf(stderr, "Time: %ld.%09ld\n", t_end.tv_sec - t_start.tv_sec - 1, 1000000000L + t_end.tv_nsec - t_start.tv_nsec);
+  else
+    fprintf(stderr, "Time: %ld.%09ld\n", t_end.tv_sec - t_start.tv_sec, t_end.tv_nsec - t_start.tv_nsec);
+
+  fclose(records_file);
+
+  EXEC(e_free(&membuf));
   EXEC(e_close(&EpiphanyGpu));
   EXEC(e_finalize());
-
-  for (i = 0; i < count; ++i) {
-    printf("Distance between query record (%u) and record %u is %u.\n", query, *(identifiers + i), *(distances + i));
-  }
 
   free(distances);
   free(identifiers);
