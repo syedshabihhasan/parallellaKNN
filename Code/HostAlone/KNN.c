@@ -111,6 +111,7 @@ void PreprocessLSH(char* inputFile){
 	}
     }
     fprintf(stderr, "number of overflows = %u\n",overflow); 
+    free(record);
 }
 
 unsigned int HammingDist(unsigned int *rec, unsigned int *query) {
@@ -186,10 +187,12 @@ int distcmpfn(const void *a, const void *b)
 unsigned int KNN(char* inputfile, unsigned int* query, unsigned int* ans, unsigned int k){
     unsigned int* lookupBucket;
     unsigned int lookupCount;
-    unsigned int i;
+    unsigned int i,j;
     struct distRec *distances;
     void *rec;
     FILE *fin;
+    unsigned int tempDist;
+    unsigned int tempRec;
 
     if(k == 0)
 	return 0;
@@ -213,31 +216,60 @@ unsigned int KNN(char* inputfile, unsigned int* query, unsigned int* ans, unsign
     }
 
     lookupCount = getBuckets(query, lookupBucket);
-    distances = malloc(sizeof(struct distRec)*lookupCount);
+    distances = malloc(sizeof(struct distRec)*k);
     if(distances == NULL){
 	perror("distances struct");
 	exit(-1);
     }
-    for(i = 0; i < lookupCount; i++){
-	distances[i].record = lookupBucket[i];
-	/*get this record and compute distance to it*/
-	fseek(fin, BYTES_PER_RECORD*(lookupBucket[i] - 1), SEEK_CUR);
-	fread(rec, BYTES_PER_RECORD, 1, fin);
-	distances[i].dist = HammingDist(rec, query);
-    }
-    fclose(fin);
-    qsort(distances, lookupCount, sizeof(struct distRec), distcmpfn);
-    
     if(k > lookupCount){
 	fprintf(stderr, "I don't have that many elements in buckets where I'm hashed. Sorry, I can give only %u elements\n", lookupCount);
 	k = lookupCount;
     }
+    for(i = 0; i < k; i++){
+	/*get this record and compute distance to it*/
+	fseek(fin, BYTES_PER_RECORD*(lookupBucket[i] - 1), SEEK_SET);
+	fread(rec, BYTES_PER_RECORD, 1, fin);
+	tempDist = HammingDist(rec, query);
+	distances[i].record = lookupBucket[i];
+	distances[i].dist = tempDist;
+    }
+
+    qsort(distances, k, sizeof(struct distRec), distcmpfn);
+    for(i = k; i < lookupCount; i++){
+	/*get this record and compute distance to it*/
+	fseek(fin, BYTES_PER_RECORD*(lookupBucket[i] - 1), SEEK_SET);
+	fread(rec, BYTES_PER_RECORD, 1, fin);
+	tempDist = HammingDist(rec, query);
+	if(distances[k-1].dist < tempDist){
+	    continue;
+	}
+        /*insertion sort*/
+	j = k - 1;
+	distances[j].dist = tempDist;
+	distances[j].record = lookupBucket[i];
+	while(distances[j-1].dist > distances[j].dist && j > 0){
+	    tempDist = distances[j-1].dist;
+	    tempRec = distances[j-1].record;
+	    distances[j-1].dist = distances[j].dist;
+	    distances[j-1].record = distances[j].record;
+	    distances[j].dist = tempDist;
+	    distances[j].record = tempRec;
+	    j = j - 1;
+	}
+    }
+
+    fclose(fin);
+
     for(i = 0; i < k; i++)
 	ans[i] = distances[i].record;
+
+    free(rec);
+    free(lookupBucket);
+    free(distances);
 
     return k;
 }
 
-	
+
 
 

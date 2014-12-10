@@ -16,7 +16,7 @@ int main(int argc, char* args[]){
 
     unsigned int i, k, ret, queryID;
     unsigned int* ans;
-    void* query;
+    void* queryCompleteRecord;
     FILE* fin;
     char choice;
 
@@ -37,6 +37,7 @@ int main(int argc, char* args[]){
 
     srandom(2);
     system("rm -f *.hash");
+
     CreateHashTableFiles();
     PreprocessLSH(args[1]);
 
@@ -45,8 +46,8 @@ int main(int argc, char* args[]){
 	fflush(stderr);
     }
 
-    query = malloc(BYTES_PER_RECORD);
-    if(query == NULL){
+    queryCompleteRecord = malloc(BYTES_PER_RECORD);
+    if(queryCompleteRecord == NULL){
 	perror("malloc q");
 	exit(-1);
     }
@@ -56,14 +57,14 @@ int main(int argc, char* args[]){
 	exit(-1);
     }
    while(1){
-	queryID = getRandomIndex(1, MAX_RECORDS-1);
-	fseek(fin, (queryID-1)*sizeof(unsigned int), SEEK_SET);
-	fread(&query, sizeof(unsigned int), 1, fin);
+	queryID = getRandomIndex(2, MAX_RECORDS-1);
+	fseek(fin, (queryID-1)*BYTES_PER_RECORD, SEEK_SET);
+	fread(queryCompleteRecord, BYTES_PER_RECORD, 1, fin);
 	if(DEBUG){
-	    fprintf(stderr, "ID found in file = %u\t ID generated = %u\n", *(unsigned int*)query,  queryID);
+	    fprintf(stderr, "ID found in file = %u\t ID generated = %u\n", *(unsigned int*)queryCompleteRecord,  queryID);
 	    fflush(stderr);
 	}
-	ret = KNN(args[1], query, ans, k);
+	ret = KNN(args[1], queryCompleteRecord, ans, k);
 	fprintf(stdout, "-------query = %u-------\n", queryID);
 	for(i = 0; i < ret; i++){
 	    fprintf(stdout, "%u : %u\n", i, ans[i]);
