@@ -45,7 +45,6 @@ int main(int argc, char* args[]){
 	fflush(stderr);
     }
     
-
     queryCompleteRecord = malloc(BYTES_PER_RECORD);
     if(queryCompleteRecord == NULL){
 	perror("malloc q");
