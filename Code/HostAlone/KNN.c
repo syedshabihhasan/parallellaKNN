@@ -194,7 +194,7 @@ unsigned int KNN(char* inputfile, unsigned int* query, unsigned int* ans, unsign
     unsigned int tempDist;
     unsigned int tempRec;
 
-    if(k == 0)
+    if(k == 0 )
 	return 0;
 
     fin = fopen(inputfile, "rb");
@@ -204,7 +204,7 @@ unsigned int KNN(char* inputfile, unsigned int* query, unsigned int* ans, unsign
     }
     
     rec = malloc(sizeof(char)*BYTES_PER_RECORD);
-    if(rec == NULL){
+    if(rec ==s NULL){
 	perror("rec");
 	exit(-1);
     }
@@ -247,6 +247,8 @@ unsigned int KNN(char* inputfile, unsigned int* query, unsigned int* ans, unsign
 	j = k - 1;
 	distances[j].dist = tempDist;
 	distances[j].record = lookupBucket[i];
+	if(j == 0)
+	    continue;
 	while(distances[j-1].dist > distances[j].dist && j > 0){
 	    tempDist = distances[j-1].dist;
 	    tempRec = distances[j-1].record;
@@ -255,6 +257,8 @@ unsigned int KNN(char* inputfile, unsigned int* query, unsigned int* ans, unsign
 	    distances[j].dist = tempDist;
 	    distances[j].record = tempRec;
 	    j = j - 1;
+	    if(j == 0)
+		break;
 	}
     }
 
