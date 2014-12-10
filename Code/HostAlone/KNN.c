@@ -56,14 +56,19 @@ void CreateHashTableFiles(){
 void PreprocessLSH(char* inputFile){
     FILE* fin;
     FILE* hfile[8];
-    void *record;
+    void *recordComplete;
     char fname[4];
     unsigned int i, id;
     unsigned int hashValue, filenum, bucketPosition, itemCount;
     unsigned int overflow;
+    FILE* collisionLog;
 
-    record=malloc(sizeof(char)*BYTES_PER_RECORD);
-    if(record==NULL){
+    collisionLog = fopen("collisionLog.log", "w");
+    if(collisionLog == NULL){
+	perror("collisionLog");
+    }
+    recordComplete=malloc(sizeof(char)*BYTES_PER_RECORD);
+    if(recordComplete==NULL){
 	perror("record in LSH");
 	exit(-1);
     }
@@ -83,13 +88,15 @@ void PreprocessLSH(char* inputFile){
     }
     overflow = 0;
     while(!feof(fin)){
-	fread(record, sizeof(char), BYTES_PER_RECORD, fin);
+	fread(recordComplete, BYTES_PER_RECORD, 1, fin);
 	for(i = 0; i < MAX_HASH_FUNCTION; i++){
-	    hashValue = HashValue(record, i);
-	    filenum = hashValue & 7; /*eqv to %7*/
+	    hashValue = HashValue(recordComplete, i);
+	    filenum = hashValue & 7; /*eqv to %8*/
 	    bucketPosition = hashValue/8;
 	    /*seek to this bucket in the above file*/
-	    fseek(hfile[filenum], sizeof(unsigned int)*MAX_ITEM_PER_BUCKET*(bucketPosition), SEEK_SET);
+	    if(fseek(hfile[filenum], sizeof(unsigned int)*MAX_ITEM_PER_BUCKET*(bucketPosition), SEEK_SET) < 0){
+		perror("fseek in hfile");
+	    }
 	    /*find out first empty spot for id of this record in this bucket*/
 	    itemCount = 1;
 	    while(itemCount <= MAX_ITEM_PER_BUCKET){
@@ -101,17 +108,31 @@ void PreprocessLSH(char* inputFile){
 		itemCount++;
 	    }
 	    if(id != 0){
-		fprintf(stderr, "Error: %s:%d: Out of memory for %u th item in a bucket\n", __FILE__, __LINE__, *(unsigned int*)record);
+		fprintf(stdout, "Error: %s:%d: Out of memory for %u th item in a bucket\n", __FILE__, __LINE__, *(unsigned int*)recordComplete);
 		overflow++;
 		continue;
 	    }
 	    /*you want to put in this read empty spot.. so go back 4 bytes*/
-	    fseek(hfile[filenum], -sizeof(unsigned int), SEEK_CUR);
-	    fwrite(record, sizeof(unsigned int), 1, hfile[filenum]); 
+	    if(fseek(hfile[filenum], -sizeof(unsigned int), SEEK_CUR) < 0){
+		perror("fseek in hfile2");
+	    }
+	    if(fwrite((unsigned int*)recordComplete, sizeof(unsigned int), 1, hfile[filenum]) != 1){
+		perror("fwrite");
+	    }
+	    if(DEBUG > 1){
+		fprintf(stderr, "record ID %u has hashvalue = %u put in filenum = %u and bucketposition = %u and this is the %u th element in this bucket\n", \
+			*(unsigned int*)recordComplete, hashValue, filenum, bucketPosition, itemCount);
+		fflush(stderr);
+	    }
+	    if(DEBUG){
+		fprintf(collisionLog, "%u\n", hashValue);
+	    }
 	}
     }
-    fprintf(stderr, "number of overflows = %u\n",overflow); 
-    free(record);
+    fprintf(stderr, "number of overflows = %u\n",overflow);
+    fclose(fin);
+    fclose(collisionLog);
+    free(recordComplete);
 }
 
 unsigned int HammingDist(unsigned int *rec, unsigned int *query) {
@@ -149,20 +170,20 @@ unsigned int getBuckets(void* queryCompleteRecord, unsigned int* temp){
 	 * but first figure out where is this **** - file look up*/
 	memset(fname, '\0', 4);
 	sprintf(fname, "%u.hash", qhash & 7);
-	fp = fopen(fname, "ab+");
+	fp = fopen(fname, "rb");
 	if(fp == NULL){
 	    perror("qhash file");
 	    exit(-1);
 	}
 	/*seek to qhash bucket*/
-	fseek(fp, sizeof(unsigned int)*MAX_ITEM_PER_BUCKET*(qhash/8), SEEK_SET);
+	if(fseek(fp, sizeof(unsigned int)*MAX_ITEM_PER_BUCKET*(qhash/8), SEEK_SET) < 0){
+	    perror("fseek in fp");
+	}
 	/*read the bucket till you hit zero entry or reach to the end of bucket*/
 	itemCount = 0;
 	while(itemCount < MAX_ITEM_PER_BUCKET){
 	    fread(&tempid, sizeof(unsigned int), 1, fp);
-	    if(tempid == 0)
-		break;
-	    if(tempid == queryID)
+	    if(tempid == queryID || tempid == 0)
 		continue;
 	    temp[sofar++] = tempid;
 	    if(sofar >= MAX_LOOKUP){
@@ -233,7 +254,9 @@ unsigned int KNN(char* inputfile, void* queryCompleteRecord, unsigned int* ans, 
     }
     for(i = 0; i < k; i++){
 	/*get this record and compute distance to it*/
-	fseek(fin, BYTES_PER_RECORD*(lookupBucket[i] - 1), SEEK_SET);
+	if(fseek(fin, BYTES_PER_RECORD*(lookupBucket[i] - 1), SEEK_SET) < 0){
+	    perror("fseek in fin");
+	}
 	fread(recCompleteRecord, BYTES_PER_RECORD, 1, fin);
 	tempDist = HammingDist(recCompleteRecord, queryCompleteRecord);
 	distances[i].record = lookupBucket[i];
@@ -242,7 +265,9 @@ unsigned int KNN(char* inputfile, void* queryCompleteRecord, unsigned int* ans, 
     qsort(distances, k, sizeof(struct distRec), distcmpfn);
     for(i = k; i < lookupCount; i++){
 	/*get this record and compute distance to it*/
-	fseek(fin, BYTES_PER_RECORD*(lookupBucket[i] - 1), SEEK_SET);
+	if(fseek(fin, BYTES_PER_RECORD*(lookupBucket[i] - 1), SEEK_SET) < 0){ 
+	    perror("fseek in fin 2");
+	}
 	fread(recCompleteRecord, BYTES_PER_RECORD, 1, fin);
 	tempDist = HammingDist(recCompleteRecord, queryCompleteRecord);
 	if(distances[k-1].dist < tempDist){
