@@ -28,7 +28,6 @@ int main(int argc, char *argv[]) {
   unsigned rows;
   unsigned cols;
 
-  query = 0x1;
   count = 0xA;
   distances = (unsigned int *) malloc(count * 0x4);
   identifiers = (unsigned int *) malloc(count * 0x4);
@@ -71,7 +70,11 @@ int main(int argc, char *argv[]) {
 
   EXEC(e_start_group(&EpiphanyGpu));
 
-  ProcessRecords(distances, identifiers, count, query);
+  for (query = 0x1; query < 0xA; ++query) {
+    ProcessRecords(distances, identifiers, count, query, ZERO);
+  }
+  query = 0xA;
+  ProcessRecords(distances, identifiers, count, query, ONE);
 
   EXEC(e_close(&EpiphanyGpu));
   EXEC(e_finalize());

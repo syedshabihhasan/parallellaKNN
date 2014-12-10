@@ -96,115 +96,124 @@ int main(void) {
   unsigned int *countp;
   unsigned int *distp;
   unsigned int *dflag;
+  unsigned int *sflag;
+  void *query_addr;
   void *heap_addr;
   void *dist_addr;
   unsigned int i;
   unsigned int count;
   unsigned int ID;
+  unsigned int stop;
   unsigned emem_base;
   e_dma_desc_t dma_desc[NUM_DMA_CHANNELS];
+
+  sflag = (unsigned int *) LOCAL_START_FLAG_ADDR;
 
   /* Expect ARM to write this prior to starting the core */
   emem_base = e_emem_config.base;
   ID = *((unsigned int *) LOCAL_ID_ADDR);
 
-  heap_addr = (void *) ((void *) emem_base + HEAP_BUFFER_ADDR + ID * 0x40000);
+  query_addr = (void *) ((void *) emem_base + QUERY_RECORD_ADDR);
+  heap_addr = (void *) ((void *) emem_base + HEAP_BUFFER_ADDR + ID * 0x4000);
   dist_addr = (void *) ((void *) emem_base + DISTANCE_ARRAYS_BASE + ID * 0x40);
   countp = (unsigned int *) ((void *) emem_base + COUNTS_BASE + ID * sizeof(unsigned int));
   dflag = (unsigned int *) ((void *) emem_base + DONE_FLAGS_BASE + ID * sizeof(unsigned int));
 
-  while (*((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO);
-  *((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO;
+  while (1) {
+    while (*sflag == ZERO);
+    *sflag = ZERO;
 
-  count = *countp;
+    count = *countp;
 
-  /* Get query record */
-  DMA_SET_0(0x0020, 0x0004, (void *) QUERY_RECORD_ADDR, (void *) LOCAL_QUERY_RECORD_ADDR);
-  DMA_START_0;
-  DMA_WAIT_0;
-
-  /* Process records 16 at a time */
-  while (count > SIXTEEN) {
-    DMA_SET_0(0x0020, 0x0020, heap_addr, (void *) LOCAL_BANK_1_ADDR);
+    /* Get query record */
+    DMA_SET_0(0x0020, 0x0004, query_addr, (void *) LOCAL_QUERY_RECORD_ADDR);
     DMA_START_0;
-    DMA_SET_1(0x0020, 0x0020, heap_addr + BANK_SIZE, (void *) LOCAL_BANK_2_ADDR);
-    DMA_START_1;
-
-    distp = (unsigned int *) LOCAL_DISTANCE_ARRAY_ADDR;
-    record = (unsigned int *) LOCAL_BANK_1_ADDR;
     DMA_WAIT_0;
-    for (i = ZERO; i < EIGHT; ++i) {
-      *distp++ = hamming_dist(record);
-      record += WORDS_PER_RECORD;
-    }
 
-    record = (unsigned int *) LOCAL_BANK_2_ADDR;
-    DMA_WAIT_1;
-    for (i = ZERO; i < EIGHT; ++i) {
+    /* Process records 16 at a time */
+    while (count > SIXTEEN) {
+      DMA_SET_0(0x0020, 0x0020, heap_addr, (void *) LOCAL_BANK_1_ADDR);
+      DMA_START_0;
+      DMA_SET_1(0x0020, 0x0020, heap_addr + BANK_SIZE, (void *) LOCAL_BANK_2_ADDR);
+      DMA_START_1;
+
+      distp = (unsigned int *) LOCAL_DISTANCE_ARRAY_ADDR;
+      record = (unsigned int *) LOCAL_BANK_1_ADDR;
+      DMA_WAIT_0;
+      for (i = ZERO; i < EIGHT; ++i) {
+        *distp++ = hamming_dist(record);
+        record += WORDS_PER_RECORD;
+      }
+
+      record = (unsigned int *) LOCAL_BANK_2_ADDR;
+      DMA_WAIT_1;
+      for (i = ZERO; i < EIGHT; ++i) {
       *distp++ = hamming_dist(record);
       record += WORDS_PER_RECORD;
     }
 
     DMA_SET_0(0x0008, 0x0001, (void *) LOCAL_DISTANCE_ARRAY_ADDR, dist_addr);
     DMA_START_0;
+    heap_addr += 0x40000;
     DMA_WAIT_0;
 
     *dflag = ONE;
     count -= SIXTEEN;
 
-    while (*((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO);
-    *((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO;
-  }
-
-  if (count > EIGHT) {
-    count -= EIGHT;
-    DMA_SET_0(0x0020, 0x0020, heap_addr, (void *) LOCAL_BANK_1_ADDR);
-    DMA_START_0;
-    DMA_SET_1(0x0020, count * 0x0004, heap_addr + BANK_SIZE, (void *) LOCAL_BANK_2_ADDR);
-    DMA_START_1;
-
-    distp = (unsigned int *) LOCAL_DISTANCE_ARRAY_ADDR;
-    record = (unsigned int *) LOCAL_BANK_1_ADDR;
-    DMA_WAIT_0;
-    for (i = ZERO; i < EIGHT; ++i) {
-      *distp++ = hamming_dist(record);
-      record += WORDS_PER_RECORD;
+    while (*sflag == ZERO);
+      *sflag = ZERO;
     }
 
-    record = (unsigned int *) LOCAL_BANK_2_ADDR;
-    DMA_WAIT_1;
-    for (i = ZERO; i < count; ++i) {
-      *distp++ = hamming_dist(record);
-      record += WORDS_PER_RECORD;
-    }
+    if (count > EIGHT) {
+      count -= EIGHT;
+      DMA_SET_0(0x0020, 0x0020, heap_addr, (void *) LOCAL_BANK_1_ADDR);
+      DMA_START_0;
+      DMA_SET_1(0x0020, count * 0x0004, heap_addr + BANK_SIZE, (void *) LOCAL_BANK_2_ADDR);
+      DMA_START_1;
 
-    DMA_SET_0(0x0008, 0x0001, (void *) LOCAL_DISTANCE_ARRAY_ADDR, dist_addr);
-    DMA_START_0;
-    DMA_WAIT_0;
+      distp = (unsigned int *) LOCAL_DISTANCE_ARRAY_ADDR;
+      record = (unsigned int *) LOCAL_BANK_1_ADDR;
+      DMA_WAIT_0;
+      for (i = ZERO; i < EIGHT; ++i) {
+        *distp++ = hamming_dist(record);
+        record += WORDS_PER_RECORD;
+      }
+
+      record = (unsigned int *) LOCAL_BANK_2_ADDR;
+      DMA_WAIT_1;
+      for (i = ZERO; i < count; ++i) {
+        *distp++ = hamming_dist(record);
+        record += WORDS_PER_RECORD;
+      }
+
+      DMA_SET_0(0x0008, 0x0001, (void *) LOCAL_DISTANCE_ARRAY_ADDR, dist_addr);
+      DMA_START_0;
+      DMA_WAIT_0;
+    } else if (count > ZERO) {
+      DMA_SET_0(0x0020, count * 0x0004, heap_addr, (void *) LOCAL_BANK_1_ADDR);
+      DMA_START_0;
+
+      distp = (unsigned int *) LOCAL_DISTANCE_ARRAY_ADDR;
+      record = (unsigned int *) LOCAL_BANK_1_ADDR;
+      DMA_WAIT_0;
+      for (i = ZERO; i < count; ++i) {
+        *distp++ = hamming_dist(record);
+        record += WORDS_PER_RECORD;
+      }
+
+      DMA_SET_0(0x0008, 0x0001, (void *) LOCAL_DISTANCE_ARRAY_ADDR, dist_addr);
+      DMA_START_0;
+      DMA_WAIT_0;
+    }
 
     *dflag = ONE;
 
-  } else if (count > ZERO) {
-    DMA_SET_0(0x0020, count * 0x0004, heap_addr, (void *) LOCAL_BANK_1_ADDR);
-    DMA_START_0;
+    while ((stop = *sflag) == ZERO);
+    *sflag = ZERO;
+    if (stop == EIGHT) break;
 
-    distp = (unsigned int *) LOCAL_DISTANCE_ARRAY_ADDR;
-    record = (unsigned int *) LOCAL_BANK_1_ADDR;
-    DMA_WAIT_0;
-    for (i = ZERO; i < count; ++i) {
-      *distp++ = hamming_dist(record);
-      record += WORDS_PER_RECORD;
-    }
-
-    DMA_SET_0(0x0008, 0x0001, (void *) LOCAL_DISTANCE_ARRAY_ADDR, dist_addr);
-    DMA_START_0;
-    DMA_WAIT_0;
-
-    *dflag = ONE;
+    *dflag = 0xD006D006;
   }
-
-  while (*((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO);
-  *((unsigned int *) LOCAL_START_FLAG_ADDR) == ZERO;
 
   *dflag = 0x600D600D;
 
