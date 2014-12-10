@@ -93,7 +93,7 @@ unsigned int HashValue(void *record, unsigned int functionNumber){
 	whereisThisBit = record + windex*4;
 	if(*(unsigned int*)whereisThisBit & (1 << index)){
 	    hashValue |= 1 << i;
-	    if(DEBUG){
+	    if(DEBUG > 1){
 		fprintf(stderr, "%d is set\n", i); 
 	    }
 	}

@@ -16,7 +16,7 @@
 void CreateHashTableFiles();
 void PreprocessLSH(char* inputfile);
 /*SHOOT THIS FUNCTION ONLY AFTER CALLING ABOVE 2 FUNCTIONS*/
-unsigned int KNN(char* inputfile, unsigned int* query, unsigned int* ans, unsigned int k);
+unsigned int KNN(char* inputfile, void* queryCompleteRecord, unsigned int* ans, unsigned int k);
 /*unsigned int getBuckets(unsigned int* query, unsigned int* ans);
 unsigned int HammingDist(unsigned int* rec, unsigned int* query);*/
 

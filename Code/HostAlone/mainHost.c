@@ -10,7 +10,7 @@
 #include <ctype.h>
 #include "HashFunctions.h" 
 #include "KNN.h"
-#define MAX_RECORDS 256
+#define MAX_RECORDS 997747 
 
 int main(int argc, char* args[]){
 
@@ -36,15 +36,15 @@ int main(int argc, char* args[]){
     }
 
     srandom(2);
+    
     system("rm -f *.hash");
-
     CreateHashTableFiles();
     PreprocessLSH(args[1]);
-
     if(DEBUG){
 	fprintf(stderr, "Preprocess complete\n\n\n");
 	fflush(stderr);
     }
+    
 
     queryCompleteRecord = malloc(BYTES_PER_RECORD);
     if(queryCompleteRecord == NULL){
@@ -70,7 +70,13 @@ int main(int argc, char* args[]){
 	    fprintf(stdout, "%u : %u\n", i, ans[i]);
 	}
 	fprintf(stdout, "Want to shoot another query?(y/n):\n");
-	fscanf(stdin, "%c", &choice);
+	while(1){
+	    fscanf(stdin, "%c", &choice);
+	    if(toupper(choice) == 'Y' || toupper(choice) == 'N')
+		break;
+	    else
+		fprintf(stdout, "enter y or n\n");
+	}
 	if(toupper(choice) == 'Y')
 	    continue;
 	else

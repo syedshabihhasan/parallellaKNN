@@ -131,18 +131,20 @@ unsigned int HammingDist(unsigned int *rec, unsigned int *query) {
   return dist;
 }
 
-unsigned int getBuckets(unsigned int* query, unsigned int* temp){
+unsigned int getBuckets(void* queryCompleteRecord, unsigned int* temp){
     unsigned int i;
     unsigned int qhash;
     unsigned int tempid;
     unsigned int itemCount;
     unsigned int sofar;
+    unsigned int queryID;
     char fname[4];
     FILE *fp;
 
+    queryID = *(unsigned int*)queryCompleteRecord;
     sofar = 0;
     for(i = 0; i < MAX_HASH_FUNCTION; i++){
-	qhash = HashValue(query, i);
+	qhash = HashValue(queryCompleteRecord, i);
 	/*get all elements from this bucket
 	 * but first figure out where is this **** - file look up*/
 	memset(fname, '\0', 4);
@@ -160,7 +162,7 @@ unsigned int getBuckets(unsigned int* query, unsigned int* temp){
 	    fread(&tempid, sizeof(unsigned int), 1, fp);
 	    if(tempid == 0)
 		break;
-	    if(tempid == *query)
+	    if(tempid == queryID)
 		continue;
 	    temp[sofar++] = tempid;
 	    if(sofar >= MAX_LOOKUP){
@@ -171,7 +173,7 @@ unsigned int getBuckets(unsigned int* query, unsigned int* temp){
 	}
 	fclose(fp);
     }
-    return (sofar - 1);
+    return sofar==0?0:(sofar-1);
 }
 /*
  * @func distcmpfn()
@@ -184,12 +186,12 @@ int distcmpfn(const void *a, const void *b)
     return (sa->dist - sb->dist);  
 }
 
-unsigned int KNN(char* inputfile, unsigned int* query, unsigned int* ans, unsigned int k){
+unsigned int KNN(char* inputfile, void* queryCompleteRecord, unsigned int* ans, unsigned int k){
     unsigned int* lookupBucket;
     unsigned int lookupCount;
     unsigned int i,j;
     struct distRec *distances;
-    void *rec;
+    void *recCompleteRecord;
     FILE *fin;
     unsigned int tempDist;
     unsigned int tempRec;
@@ -203,8 +205,8 @@ unsigned int KNN(char* inputfile, unsigned int* query, unsigned int* ans, unsign
 	exit(-1);
     }
     
-    rec = malloc(sizeof(char)*BYTES_PER_RECORD);
-    if(rec ==s NULL){
+    recCompleteRecord = malloc(sizeof(char)*BYTES_PER_RECORD);
+    if(recCompleteRecord == NULL){
 	perror("rec");
 	exit(-1);
     }
@@ -215,7 +217,11 @@ unsigned int KNN(char* inputfile, unsigned int* query, unsigned int* ans, unsign
 	exit(-1);
     }
 
-    lookupCount = getBuckets(query, lookupBucket);
+    lookupCount = getBuckets(queryCompleteRecord, lookupBucket);
+    if(DEBUG){
+	fprintf(stderr, "%u lookups need to be done\n", lookupCount);
+	fflush(stderr);
+    }
     distances = malloc(sizeof(struct distRec)*k);
     if(distances == NULL){
 	perror("distances struct");
@@ -228,18 +234,17 @@ unsigned int KNN(char* inputfile, unsigned int* query, unsigned int* ans, unsign
     for(i = 0; i < k; i++){
 	/*get this record and compute distance to it*/
 	fseek(fin, BYTES_PER_RECORD*(lookupBucket[i] - 1), SEEK_SET);
-	fread(rec, BYTES_PER_RECORD, 1, fin);
-	tempDist = HammingDist(rec, query);
+	fread(recCompleteRecord, BYTES_PER_RECORD, 1, fin);
+	tempDist = HammingDist(recCompleteRecord, queryCompleteRecord);
 	distances[i].record = lookupBucket[i];
 	distances[i].dist = tempDist;
     }
-
     qsort(distances, k, sizeof(struct distRec), distcmpfn);
     for(i = k; i < lookupCount; i++){
 	/*get this record and compute distance to it*/
 	fseek(fin, BYTES_PER_RECORD*(lookupBucket[i] - 1), SEEK_SET);
-	fread(rec, BYTES_PER_RECORD, 1, fin);
-	tempDist = HammingDist(rec, query);
+	fread(recCompleteRecord, BYTES_PER_RECORD, 1, fin);
+	tempDist = HammingDist(recCompleteRecord, queryCompleteRecord);
 	if(distances[k-1].dist < tempDist){
 	    continue;
 	}
@@ -267,7 +272,7 @@ unsigned int KNN(char* inputfile, unsigned int* query, unsigned int* ans, unsign
     for(i = 0; i < k; i++)
 	ans[i] = distances[i].record;
 
-    free(rec);
+    free(recCompleteRecord);
     free(lookupBucket);
     free(distances);
 
