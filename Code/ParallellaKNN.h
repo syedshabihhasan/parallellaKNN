@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 #include <e-hal.h>
 
@@ -91,5 +92,7 @@
 
 extern e_platform_t EpiphanyPlatform;
 extern e_epiphany_t EpiphanyGpu;
+extern e_mem_t membuf;
+extern FILE *records_file;
 
 #endif

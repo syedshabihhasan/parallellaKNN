@@ -41,7 +41,7 @@
 */
 
 /*void memcpy_w(void *dest, const void *src, size_t count);*/
-unsigned int hamming_dist(unsigned int *rec, unsigned int *query);
+//unsigned int hamming_dist(unsigned int *rec, unsigned int *query);
 
 void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned int count, unsigned int query, unsigned int shutdown) {
 
@@ -86,8 +86,6 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
    *
    */
 
-  e_mem_t membuf;
-  FILE *records_file;
   unsigned int *dist_base;
   unsigned int *distp;
   unsigned int *done_flags;
@@ -108,14 +106,6 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
 
   id = identifiers;
 
-  if ((records_file = fopen("records.bin", "rb")) == NULL) {
-    fprintf(stderr, "Could not open records file.\n");
-    fflush(stderr);
-    exit(-1);
-  }
-
-  e_alloc(&membuf, ZERO, 0x02000000);
-
   dist_base = (unsigned int *) ((void *) membuf.base + DISTANCE_ARRAYS_BASE);
   done_flags = (unsigned int *) ((void *) membuf.base + DONE_FLAGS_BASE);
   countp = (unsigned int *) ((void *) membuf.base + COUNTS_BASE);
@@ -123,8 +113,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
   query_addr = (void *) membuf.base + QUERY_RECORD_ADDR;
 
   for (core = ZERO; core < SIXTEEN; ++core) {
-    dflag = done_flags + core;
-    *dflag = ZERO;
+    *(done_flags + core) = ZERO;
     //printf("Wrote %u to address %X\n", ZERO, (unsigned int) dflag);
     //fflush(stdout);
   }
@@ -198,7 +187,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
       fseek(records_file, record_offset, SEEK_SET);
       fread(heap_addr, 0x400, ONE, records_file);
       //printf("Read record into shared memory address %u\n", (unsigned int) heap_addr);
-      printf("Hamming distance is %u\n", hamming_dist(heap_addr, query_addr));
+      //printf("Hamming distance is %u\n", hamming_dist(heap_addr, query_addr));
       heap_addr += 0x400;
     }
     heap_addr += (SIXTEEN - divcount - ONE) * 0x400;
@@ -215,7 +204,7 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
       fseek(records_file, record_offset, SEEK_SET);
       fread(heap_addr, 0x400, ONE, records_file);
       //printf("Read record into shared memory address %X\n", (unsigned int) heap_addr);
-      printf("Hamming distance is %u\n", hamming_dist(heap_addr, query_addr));
+      //printf("Hamming distance is %u\n", hamming_dist(heap_addr, query_addr));
       heap_addr += 0x400;
     }
     heap_addr += (SIXTEEN - divcount) * 0x400;
@@ -259,12 +248,14 @@ void ProcessRecords(unsigned int *distances, unsigned int *identifiers, unsigned
     e_write(&EpiphanyGpu, row, col, LOCAL_START_FLAG_ADDR, &start, sizeof(unsigned int));
   }
 
-  usleep(100000);
+  //usleep(100000);
 
+/*
   for (core = ZERO; core < SIXTEEN; ++core) {
     dflag = done_flags + core;
     printf("Core %u: 0x%X\n", core, *dflag);
   }
+*/
 
   return;
 }
@@ -284,6 +275,7 @@ void memcpy_w(void *dest, const void *src, size_t count) {
 }
 */
 
+/*
 unsigned int hamming_dist(unsigned int *rec, unsigned int *query) {
 
   unsigned int d;
@@ -302,4 +294,4 @@ unsigned int hamming_dist(unsigned int *rec, unsigned int *query) {
 
   return dist;
 }
-
+*/
