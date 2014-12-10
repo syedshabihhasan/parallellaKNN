@@ -1,0 +1,16 @@
+\section{Methodology}
+\label{sec:methodology}
+In this section we describe our LSH algorithm and evaluate the theoretical reduction in calculations. 
+Whenever a n\"{a}ive KNN search is performed, distances are calculated between all query and all other records in the dataset. 
+For us, using the million song dataset, this meant calculating approximately $10^{6}$ distances for each point, constituting a total of $10^{12}$ distance calculations for the complete dataset. 
+In order to significantly reduce the number of calculations we employ LSH. 
+
+Our hash functions select 24 random bits from each record. 
+These 24 bits act as the bucket address which stores the identifier of the record which was hashed. 
+This process is repeated 32 times, each time with a different hash function for constructing the hash table. 
+When a query record is presented, it is also hashed using the 32 hash functions which return bucket identifier. 
+These buckets contain identifiers of records, these records are accessed and hamming distances are calculated between these records and the query record and the top K records are returned as the K nearest neighbours. 
+
+Since we have about $10^{6}$ records, our hash table should contain approximately $32 \times 10^6$ records. Each bucket, on an average, contains identifiers for 2 records. Therefore, whenever a query point is presented for KNN search, an average of 64 distances are calculated. This is several orders of magnitude less calculation than the n\"{a}ive approach.
+
+\textbf{\underline{Key Observation}:} \textit{Using LSH, we reduce the expected number of distance calculations from $10^6$ to less than $10^2$, a reduction of four orders.}
