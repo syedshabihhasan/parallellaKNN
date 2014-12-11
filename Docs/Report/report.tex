@@ -7,6 +7,12 @@
 \usepackage{makecell}
 \usepackage{amssymb}
 \usepackage{authblk}
+\usepackage{cite}
+\usepackage{hyperref}
+\graphicspath{{./images/}}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
 
 \title{K - Nearest Neighbor Search on a Parallella Board}
 \author{Syed Shabih Hasan, James W. Hegeman, Vivek B. Sardeshmukh \thanks{All authors contributed equally to this project}}
@@ -18,7 +24,10 @@
 \newpage
 \input{sections/intro}
 \input{sections/background}
-\input{sections/lsh_knn}
+\input{sections/dataset}
+\input{sections/methodology}
 \input{sections/measurements}
 \input{sections/conclusion}
+\bibliography{report}
+\bibliographystyle{plain}
 \end{document}
