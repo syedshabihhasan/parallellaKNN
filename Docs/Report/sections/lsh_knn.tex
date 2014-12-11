@@ -8,4 +8,16 @@ There are series of papers on computing ``approximate'' $k$-nearest neighbors.
 In 1999, Aristides et al.~\cite{gionis1999similarity} proposed an approximation algorithm via hashing.
 The hashing scheme in this paper is referred as \emph{locality sensitive hashing} (LSH) and it enjoyed a lot of attention due its simplicity and efficiency. 
 After that there are several algorithms proposed based on variants of locality sensitive hashing (see a nice survey~\cite{andoni2006near}).
-The advantage of using 
+The advantage of using LSH is that we don't have to compute distances to all points in the dataset once we have the preprocessed dataset. 
+
+Here we explain KNN using LSH. 
+We have $h_1, h_2, \ldots, h_\ell$ where $h_i: \mathbb{N} \to [0, W]$ is a hash function which returns a value in the range $0$ to $W$.
+In preprocessing phase, we apply these hash functions to each record and store the ID of the record to each hashed location. 
+That is, in the hash table, each record will appear $\ell$ times. 
+Since each hash function maps a record to a value in the range $[0, W]$, the hash table contains at most $W$ rows. 
+We restricted that each hash table row will contain at most $MR$ elements, hence the size of the hash table is $O(MR \cdot W)$ multiplied by space taken by a single record. 
+Once this data structure is created, we process queries. 
+For a query, we hash it with $\ell$ hash functions and retrieves the records in the corresponding rows from the hash table. 
+For each record retrieved we compute the distance to query and returns the $k$-nearest records. 
+
+
