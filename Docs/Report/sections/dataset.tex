@@ -2,18 +2,18 @@
 \label{sec:dataset}
 \subsection{Original Dataset}
 \label{subsec: meth_orig_dataset}
-We used the Million Song Dataset \cite{msd01} for performing the KNN. 
-The dataset consisted of 1 million files, each containing audio features as well as metadata of a unique song, as shown in Table \ref{table:field_msd_rec}. 
-The size of the dataset was 300GB. 
-For our KNN search we limited our feature set to audio features listed in Table \ref{table:field_msd_rec} in addition to a few others. 
-Our decision to ignore artist metadata was motivated by the idea that an artist may perform songs that can be placed in different genres, songs belonging to different genres would have different audio features but the artist information would be the same and the artist specific features can lead us to picking incorrect neighbours.
+We used the Million Song Dataset~\cite{msd01} for our experiments and performed KNN on it. 
+The dataset consisted of 1 million files, each containing audio features as well as metadata of a unique song, as shown in Table~\ref{table:field_msd_rec}. 
+The size of the dataset is 300GB. 
+For our KNN search we limited our feature set to audio features listed in Table~\ref{table:field_msd_rec} in addition to a few others. 
+Our decision to ignore artist metadata was motivated by the idea that an artist may perform songs that can be placed in different genres, songs belonging to different genres would have different audio features but the artist information would be the same and the artist specific features can lead us to picking incorrect neighbors.
 \begin{table}
 \begin{center}
 \begin{tabular}{| l | l |}
 \hline
 \textbf{Feature Type} & \textbf{Feature Names} \\
 \hline
-Artist metadata & \texttt{artist\_id,} \\
+Artist metadata & \texttt{artist\_id} \\
  & \texttt{artist\_name}\\
  & \texttt{artist\_latitude}\\
  & \texttt{artist\_terms}\\
@@ -41,7 +41,7 @@ Variable length features were converted to constant length by calculating summar
 \begin{center}
 \begin{tabular}{| l | l |}
 \hline
-\textbf{Features} & Statistics Extracted \\
+\textbf{Features} & \textbf{Statistics Extracted} \\
 \hline
 \texttt{segments\_timbre}, & min, max, mean\\
 \texttt{segments\_pitch}, & median, standard deviation\\

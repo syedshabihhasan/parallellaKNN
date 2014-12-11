@@ -6,7 +6,7 @@
 
 #define BYTES_PER_RECORD 1024
 /*how many records per bucket (max #collisons)*/ 
-#define MAX_ITEM_PER_BUCKET 256 
+#define MAX_ITEM_PER_BUCKET 64 
 /*do at most these many look-ups*/
 #define MAX_LOOKUP 500
 /*how many total buckets - 2^width of hash function*/ 

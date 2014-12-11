@@ -37,19 +37,19 @@ int main(int argc, char* args[]){
 
     
     /*HashFunctionsInit(10); */
-    /*system("rm -f *.hash");
+    system("rm -f *.hash");
     CreateHashTableFiles();
     if(DEBUG){
 	fprintf(stderr, "Creation of empty hashtables done\n");
 	fflush(stderr);
-    }*/
+    }
     PreprocessLSH(args[1]);
     if(DEBUG){
 	fprintf(stderr, "Preprocess complete\n\n\n");
 	fflush(stderr);
     }
 
-
+  /*
     queryCompleteRecord = malloc(BYTES_PER_RECORD);
     if(queryCompleteRecord == NULL){
 	perror("malloc q");
@@ -88,6 +88,7 @@ int main(int argc, char* args[]){
 	    break;
     }
     fclose(fin);
+    */
     return 0;
 }
 

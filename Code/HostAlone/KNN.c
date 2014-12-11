@@ -97,7 +97,9 @@ void PreprocessLSH(char* inputFile){
 	    if(fseek(hfile[filenum], sizeof(unsigned int)*MAX_ITEM_PER_BUCKET*(bucketPosition), SEEK_SET) < 0){
 		perror("fseek in hfile");
 	    }
-	    /*find out first empty spot for id of this record in this bucket*/
+            if(DEBUG){
+		fprintf(collisionLog, "%u\n", hashValue);
+	    }	    /*find out first empty spot for id of this record in this bucket*/
 	    itemCount = 1;
 	    while(itemCount <= MAX_ITEM_PER_BUCKET){
 		fread(&id, sizeof(unsigned int), 1, hfile[filenum]);
@@ -108,10 +110,11 @@ void PreprocessLSH(char* inputFile){
 		itemCount++;
 	    }
 	    if(id != 0){
-		if(DEBUG > 0){
+		/*if(DEBUG > 0){
 		fprintf(stderr, "%u\t%u\n", *(unsigned int*)recordComplete, hashValue);
-		/*fprintf(stderr, "Error: %s:%d: Out of memory for ID = %u with hashValue = %u\n", __FILE__, __LINE__, *(unsigned int*)recordComplete, hashValue);*/
+		fprintf(stdout, "Error: %s:%d: Out of memory for ID = %u with hashValue = %u\n", __FILE__, __LINE__, *(unsigned int*)recordComplete, hashValue);
 		}
+                */
 		overflow++;
 		continue;
 	    }
@@ -122,16 +125,14 @@ void PreprocessLSH(char* inputFile){
 	    if(fwrite((unsigned int*)recordComplete, sizeof(unsigned int), 1, hfile[filenum]) != 1){
 		perror("fwrite");
 	    }
-	    if(DEBUG){
-		/*fprintf(stderr, "record ID=%u\t hashvalue=%u\t filenum=%u\t bucketposition=%u\t eleInBucket=%u\n", \
-			*(unsigned int*)recordComplete, hashValue, filenum, bucketPosition, itemCount);*/
-		/*fprintf(stderr, "%u\t %u\t %u\t %u\t %u\n", \
+	    /*if(DEBUG){
+		fprintf(stderr, "record ID=%u\t hashvalue=%u\t filenum=%u\t bucketposition=%u\t eleInBucket=%u\n", \
 			*(unsigned int*)recordComplete, hashValue, filenum, bucketPosition, itemCount);
-		fflush(stderr);*/
+		fprintf(stderr, "%u\t %u\t %u\t %u\t %u\n", \
+			*(unsigned int*)recordComplete, hashValue, filenum, bucketPosition, itemCount);
+		fflush(stderr);
 	    }
-	    if(DEBUG){
-		fprintf(collisionLog, "%u\n", hashValue);
-	    }
+	    */
 	}
     }
     fprintf(stdout, "number of overflows = %u\n",overflow);

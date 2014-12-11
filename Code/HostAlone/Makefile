@@ -19,17 +19,23 @@ CFLAGS=-I
 KNNBIN:	KNN.o HashFunctions.o mainHost.o KNN.c mainHost.c ../Infrastructure/HashFunctions.c 
 	$(CC) $(OPTS) -o KNNBIN mainHost.o HashFunctions.o KNN.o 	
 
+JUSTKNN: KNN.o HashFunctions.o justKNN.o KNN.c justKNN.c ../Infrastructure/HashFunctions.c 
+	$(CC) $(OPTS) -o JUSTKNN justKNN.o HashFunctions.o KNN.o 	
+
 mainHost.o: KNN.h ../Infrastructure/HashFunctions.h mainHost.c
 	$(CC) $(OPTS) -c mainHost.c -I . -I ../Infrastructure  
 
+justKNN.o: KNN.h ../Infrastructure/HashFunctions.h justKNN.c
+	$(CC) $(OPTS) -c justKNN.c -I . -I ../Infrastructure
+      	
 KNN.o:	KNN.h ../Infrastructure/HashFunctions.h KNN.c
 	$(CC) $(OPTS) -c KNN.c -I . -I ../Infrastructure
 
 HashFunctions.o: ../Infrastructure/HashFunctions.h ../Infrastructure/HashFunctions.c
 	$(CC) $(OPTS) -c ../Infrastructure/HashFunctions.c -I . -I ../Infrastructure
 
-tar:	KNN.h KNN.c ../Infrastructure/HashFunctions.c ../Infrastructure/HashFunctions.h mainHost.c Makefile createEmptyMain.c
-	tar -cvf HostAloneSrc.tar KNN.h KNN.c ../Infrastructure/HashFunctions.c ../Infrastructure/HashFunctions.h mainHost.c Makefile createEmptyMain.c
+tar:	KNN.h KNN.c ../Infrastructure/HashFunctions.c ../Infrastructure/HashFunctions.h mainHost.c Makefile createEmptyMain.c justKNN.c
+	tar -cvf HostAloneSrc.tar KNN.h KNN.c ../Infrastructure/HashFunctions.c ../Infrastructure/HashFunctions.h mainHost.c Makefile createEmptyMain.c justKNN.c
 
 createEmptyMain.o:	KNN.h ../Infrastructure/HashFunctions.h  createEmptyMain.c
 	$(CC) $(OPTS) -c createEmptyMain.c -I . -I ../Infrastructure/
@@ -40,4 +46,5 @@ Empty:	KNN.o HashFunctions.o createEmptyMain.o KNN.c createEmptyMain.c ../Infras
 clean:
 	rm -f KNNBIN
 	rm -f Empty
+	rm -f JUSTKNN
 	rm -f *.o
