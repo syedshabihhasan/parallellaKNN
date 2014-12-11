@@ -36,7 +36,7 @@ int main(int argc, char* args[]){
     }
 
     
-    HashFunctionsInit(10); 
+    /*HashFunctionsInit(10); */
     /*system("rm -f *.hash");
     CreateHashTableFiles();
     if(DEBUG){

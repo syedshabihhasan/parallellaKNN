@@ -108,8 +108,10 @@ void PreprocessLSH(char* inputFile){
 		itemCount++;
 	    }
 	    if(id != 0){
+		if(DEBUG){
 		fprintf(stdout, "%u\t%u\n", *(unsigned int*)recordComplete, hashValue);
 		/*fprintf(stdout, "Error: %s:%d: Out of memory for ID = %u with hashValue = %u\n", __FILE__, __LINE__, *(unsigned int*)recordComplete, hashValue);*/
+		}
 		overflow++;
 		continue;
 	    }
@@ -191,7 +193,8 @@ unsigned int getBuckets(void* queryCompleteRecord, unsigned int* temp){
 	    temp[sofar++] = tempid;
 	    if(sofar >= MAX_LOOKUP){
 		fprintf(stderr, "Max look up reached\n");
-		break;
+		fclose(fp);
+		return sofar - 1;
 	    }
 	    itemCount++;
 	}

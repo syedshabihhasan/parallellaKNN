@@ -4,7 +4,7 @@
 #ifndef HASHFUNCTIONS_H
 #define HASHFUNCTIONS_H
 
-#define DEBUG 1
+#define DEBUG 0 
 /*Length of a record in bits*/
 #define RECORD_SIZE 8192
 /*Number of hash functions*/
