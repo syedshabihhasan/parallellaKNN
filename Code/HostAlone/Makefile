@@ -35,7 +35,7 @@ createEmptyMain.o:	KNN.h ../Infrastructure/HashFunctions.h  createEmptyMain.c
 	$(CC) $(OPTS) -c createEmptyMain.c -I . -I ../Infrastructure/
 
 Empty:	KNN.o HashFunctions.o createEmptyMain.o KNN.c createEmptyMain.c ../Infrastructure/HashFunctions.c 
-	$(CC) $(OPTS) -o Empty createEmptyMain.o KNN.o HashFunctions.o
+	$(CC) $(OPTS) -o Empty -D DEBUG=1 createEmptyMain.o KNN.o HashFunctions.o
 
 clean:
 	rm -f KNNBIN

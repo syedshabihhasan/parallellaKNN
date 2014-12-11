@@ -21,7 +21,6 @@ int main(int argc, char* args[]){
     char choice;
 
     srandom(2);
-    
     system("rm -f *.hash");
     CreateHashTableFiles();
     if(DEBUG){
