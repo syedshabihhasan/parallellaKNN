@@ -55,11 +55,11 @@ int main(int argc, char* args[]){
 	}
         */
 	ret = KNN(args[1], queryCompleteRecord, ans, k);
+        /*
         fprintf(stdout, "-------query = %u-------\n", queryID);
 	for(i = 0; i < ret; i++){
 	    fprintf(stdout, "%u : %u\n", i, ans[i]);
 	}
-        /*
 	fprintf(stdout, "Want to shoot another query?(y/n):\n");
 	while(1){
 	    fscanf(stdin, "%c", &choice);
