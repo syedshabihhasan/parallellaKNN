@@ -12,14 +12,17 @@
 int main(void) {
 
   e_dma_desc_t dma_desc[2];
-  void *buffer[2];
-  unsigned int *flag = (unsigned int *) 0x7000;
+  void *buffer_base;
+  void *buffer;
+  unsigned int ID;
+  unsigned int *done;
   unsigned int *bank[4];
   unsigned int error_code = 0xE0E0E0E0;
-  unsigned int global_i = 0x00000000;
+  unsigned int global_i;
   int i;
   int b;
   int j;
+  int k;
   int ret;
 
   bank[0] = (unsigned int *) 0x0000;
@@ -27,15 +30,15 @@ int main(void) {
   bank[2] = (unsigned int *) 0x4000;
   bank[3] = (unsigned int *) 0x6000;
 
-  buffer[0] = (void *) (e_emem_config.base + (void *) 0x01000000);
-  buffer[1] = (void *) (e_emem_config.base + (void *) 0x01800000);
+  ID = *((unsigned int *) 0x6000);
+  buffer_base = (void *) ((void *) e_emem_config.base + 0x01000000 + ID * 0x4000);
+  done = (unsigned int *) ((void *) e_emem_config.base + 0x01F00000 + ID * 4);
 
-  while (*flag != 0xDDDDDDDD);
-
-  for (i = 0; i < 1024; ++i) {
+  for (i = 0; i < 128; ++i) {
     for (b = 1; b < 3; ++b) {
-      for (j = 0; j < 2048; ++j)
+      for (j = 0; j < 2048; ++j) {
         *(bank[b] + j) = (unsigned int) 0x00000000;
+      }
     }
 /*
     e_reg_write(E_REG_DMA0CONFIG, 0x00000000);
@@ -47,35 +50,39 @@ int main(void) {
     e_reg_write(E_REG_DMA0AUTODMA1, 0x00000000);
     e_reg_write(E_REG_DMA0STATUS, 0x00000000);
 */
-    e_dma_wait(E_DMA_0);
+    buffer = buffer_base;
+    global_i = ID * 0x1000;
+    for (k = 0; k < 60; ++k) {
+      e_dma_wait(E_DMA_0);
+      e_dma_set_desc(E_DMA_0, (E_DMA_ENABLE | E_DMA_MASTER | E_DMA_DWORD), 0x0000, 0x0008, 0x0008, 0x0040, 0x0020, 0x0008, 0x0008, buffer, (void *) bank[1], &dma_desc[0]);
+      /* The outer stride is not what you think it should be.
+       * It's actually the distance jumped after the last transfer
+       * of the inner loop. So, in effect, it is the 'true outer stride',
+       * minus the inner width, plus 1 * the inner stride.
+       */
+      ret = e_dma_start(&dma_desc[0], E_DMA_0);
+      if (ret != E_OK) {
+        *done = error_code;
+        return 0;
+      }
+      e_dma_wait(E_DMA_0);
 
-    e_dma_set_desc(E_DMA_0, (E_DMA_ENABLE | E_DMA_MASTER | E_DMA_DWORD), 0x0000, 0x0008, 0x0008, 0x0040, 0x0020, 0x0008, 0x0008, (void *) buffer[0] + (0x4000 * i), (void *) bank[1], &dma_desc[0]);
-    /* The outer stride is not what you think it should be.
-     * It's actually the distance jumped after the last transfer
-     * of the inner loop. So, in effect, it is the 'true outer stride',
-     * minus the inner width, plus 1 * the inner stride.
-     */
+      buffer += 0x00040000;
 
-    ret = e_dma_start(&dma_desc[0], E_DMA_0);
-    if (ret != E_OK) {
-      *flag = error_code;
-      return 0;
-    }
-
-    e_dma_wait(E_DMA_0);
-
-    for (b = 1; b < 3; ++b) {
-      for (j = 0; j < 2048; ++j) {
-        if (*(bank[b] + j) != global_i++) {
-          *flag = global_i;
-          return 0;
+      for (b = 1; b < 3; ++b) {
+        for (j = 0; j < 2048; ++j) {
+          if (*(bank[b] + j) != global_i++) {
+            *done = global_i;
+            return 0;
+          }
         }
       }
+
+      global_i += 0x0000F000;
     }
   }
 
-  *flag = (unsigned int) 0x11111111;
-  //*flag = (unsigned int) sizeof(e_dma_desc_t);
+  *done = 0x600D0000 | ID;
 
   return 0;
 }

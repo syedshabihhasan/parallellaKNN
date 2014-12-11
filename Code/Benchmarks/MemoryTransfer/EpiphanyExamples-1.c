@@ -19,28 +19,35 @@ int main(int argc, char *argv[]) {
   //struct timeval t_end;
   struct timespec t_end;
   unsigned int *block;
+  unsigned int *done_base;
+  unsigned int *done;
+  void *buffer;
   ssize_t result;
+  unsigned int core;
+  unsigned row;
+  unsigned col;
+  unsigned rows;
+  unsigned cols;
   int i;
-  int j;
-  int c1_row = 1;
-  int c1_col = 2;
-  int c2_row = 0;
-  int c2_col = 0;
-  int mc_row = atoi(argv[1]);
-  int mc_col = atoi(argv[2]);
-  unsigned int flag = 0x00000000;
+  //int j;
 
   if (sizeof(unsigned int) != 4) {
     printf("sizeof(unsigned int) = %d (not 4)\n", sizeof(unsigned int));
     exit(-1);
   }
 
-  block = (unsigned int *) malloc(_32M);
+  block = (unsigned int *) malloc(_16M);
 
-  for (i = 0; i < _8M; ++i) {
+  if (block == NULL) {
+    printf("Unable to allocate memory block.\n");
+    exit(-1);
+  }
+
+  for (i = 0; i < _4M; ++i) {
     *(block + i) = (unsigned int) i;
   }
 
+/*
   EXEC(e_init(NULL));
   EXEC(e_reset_system());
   EXEC(e_get_platform_info(&EpiphanyPlatform));
@@ -109,74 +116,78 @@ int main(int argc, char *argv[]) {
       printf("\t\tbase: 0x%X\n", (unsigned int) regmem->base);
     }
   }
-
+*/
+/**************************************************************************************/
+  printf("-------- DMA TEST --------\n");
+  EXEC(e_init(NULL));
+  EXEC(e_reset_system());
+  EXEC(e_get_platform_info(&EpiphanyPlatform));
+  row = 0;
+  col = 0;
+  rows = EpiphanyPlatform.rows;
+  cols = EpiphanyPlatform.cols;
+  EXEC(e_open(&EpiphanyGpu, row, col, rows, cols));
+  EXEC(e_reset_group(&EpiphanyGpu));
+  EXEC(e_load("MemoryTransfer-DMA_core.srec", &EpiphanyGpu, row, col, E_FALSE));
+  EXEC(e_alloc(&membuf, 0x00000000, 0x02000000));
+  buffer = (void *) membuf.base + 0x01000000;
   result = e_write(&membuf, -1, -1, 0x01000000, block, _16M);
-  printf("%lld bytes written\n", (long long int) result);
-
-  e_load("EpiphanyExamples-1_core.srec", &EpiphanyGpu, c1_row, c1_col, E_FALSE);
+  printf("1st test setup: %lld bytes written\n", (long long int) result);
+  done_base = (unsigned int *) ((void *) buffer + _15M);
+  done = done_base;
+  *done = 0x00000000;
+  core = 0x00000000;
+  result = e_write(&EpiphanyGpu, row, col, 0x6000, &core, sizeof(unsigned int));
+  if (result != 4) printf("Uh oh.\n");
   clock_gettime(CLOCK_MONOTONIC, &t_start);
-  result = e_write(&EpiphanyGpu, c1_row, c1_col, 0x7000, (void *) &flag, sizeof(flag));
-  printf("%lld bytes written\n", (long long int) result);
-  usleep(1000);
-
-  e_start(&EpiphanyGpu, c1_row, c1_col);
-  usleep(1000);
-
-  flag = 0xDDDDDDDD;
-  result = e_write(&EpiphanyGpu, c1_row, c1_col, 0x7000, (void *) &flag, sizeof(flag));
-  printf("%lld bytes written\n", (long long int) result);
-  fflush(stdout);
-
-  while (flag == 0xDDDDDDDD) {
-    usleep(1000);
-    e_read(&EpiphanyGpu, c1_row, c1_col, 0x7000, &flag, sizeof(flag));
-  }
-  printf("Result is: 0x%X\n", flag);
-
+  EXEC(e_start(&EpiphanyGpu, row, col));
+  while (*done == 0x00000000);
+  printf("Result for single-core test is: 0x%X\n", *done);
   clock_gettime(CLOCK_MONOTONIC, &t_end);
   if (t_end.tv_nsec < t_start.tv_nsec)
     printf("Time: %ld.%09ld\n", t_end.tv_sec - t_start.tv_sec - 1, 1000000000L + t_end.tv_nsec - t_start.tv_nsec);
   else
     printf("Time: %ld.%09ld\n", t_end.tv_sec - t_start.tv_sec, t_end.tv_nsec - t_start.tv_nsec);
-
   EXEC(e_free(&membuf));
-  e_close(&EpiphanyGpu);
-  e_finalize();
-
+  EXEC(e_close(&EpiphanyGpu));
+  EXEC(e_finalize());
+/********************************************************************/
   EXEC(e_init(NULL));
   EXEC(e_reset_system());
   EXEC(e_get_platform_info(&EpiphanyPlatform));
-  EXEC(e_open(&EpiphanyGpu, 0, 0, EpiphanyPlatform.rows, EpiphanyPlatform.cols));
+  row = 0;
+  col = 0;
+  rows = EpiphanyPlatform.rows;
+  cols = EpiphanyPlatform.cols;
+  EXEC(e_open(&EpiphanyGpu, row, col, rows, cols));
+  EXEC(e_reset_group(&EpiphanyGpu));
+  EXEC(e_load_group("MemoryTransfer-DMA_core.srec", &EpiphanyGpu, row, col, rows, cols, E_FALSE));
   EXEC(e_alloc(&membuf, 0x00000000, 0x02000000));
+  buffer = (void *) membuf.base + 0x01000000;
   result = e_write(&membuf, -1, -1, 0x01000000, block, _16M);
-  printf("%lld bytes written\n", (long long int) result);
-
-  flag = 0x00000000;
-  e_load("MemoryTransfer-DMA_core.srec", &EpiphanyGpu, c2_row, c2_col, E_FALSE);
-  clock_gettime(CLOCK_MONOTONIC, &t_start);
-  result = e_write(&EpiphanyGpu, c2_row, c2_col, 0x7000, (void *) &flag, sizeof(flag));
-  printf("%lld bytes written\n", (long long int) result);
-  usleep(1000);
-
-  e_start(&EpiphanyGpu, c2_row, c2_col);
-  usleep(1000);
-
-  flag = 0xDDDDDDDD;
-  result = e_write(&EpiphanyGpu, c2_row, c2_col, 0x7000, (void *) &flag, sizeof(flag));
-  printf("%lld bytes written\n", (long long int) result);
-  fflush(stdout);
-  usleep(1000);
-
-  while (flag == 0xDDDDDDDD) {
-    usleep(1000);
-    e_read(&EpiphanyGpu, c2_row, c2_col, 0x7000, &flag, sizeof(flag));
+  printf("2nd test setup: %lld bytes written\n", (long long int) result);
+  done_base = (unsigned int *) ((void *) buffer + _15M);
+  done = done_base;
+  for (i = 0; i < 16; ++i) {
+    *done++ = 0x00000000;
   }
-  printf("Result for DMA is: 0x%X\n", flag);
-
+  done = done_base;
+  for (core = 0x00000000; core < 0x00000010; ++core) {
+    row = core / 4;
+    col = core % 4;
+    result = e_write(&EpiphanyGpu, row, col, 0x6000, &core, sizeof(unsigned int));
+    usleep(100000);
+    if (result != 4) printf("Uh oh.\n");
+  }
+  clock_gettime(CLOCK_MONOTONIC, &t_start);
+  EXEC(e_start_group(&EpiphanyGpu));
+  for (i = 0; i < 16; ++i) {
+    while (*done == 0x00000000);
+    printf("Result %d for multicore test is: 0x%X\n", i, *done++);
+  }
   clock_gettime(CLOCK_MONOTONIC, &t_end);
   //gettimeofday(&t_start, NULL);
   //gettimeofday(&t_end, NULL);
-
   if (t_end.tv_nsec < t_start.tv_nsec)
     printf("Time for DMA: %ld.%09ld\n", t_end.tv_sec - t_start.tv_sec - 1, 1000000000L + t_end.tv_nsec - t_start.tv_nsec);
   else
@@ -188,8 +199,8 @@ int main(int argc, char *argv[]) {
     printf("Time: %ld.%06ld\n", t_end.tv_sec - t_start.tv_sec, t_end.tv_usec - t_start.tv_usec);
 */
   EXEC(e_free(&membuf));
-  e_close(&EpiphanyGpu);
-  e_finalize();
+  EXEC(e_close(&EpiphanyGpu));
+  EXEC(e_finalize());
 
   return 0;
 }
