@@ -10,7 +10,7 @@
 #include <ctype.h>
 #include "HashFunctions.h" 
 #include "KNN.h"
-#define MAX_RECORDS 256 
+#define MAX_RECORDS 997747 
 
 int main(int argc, char* args[]){
 

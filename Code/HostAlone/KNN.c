@@ -108,9 +108,9 @@ void PreprocessLSH(char* inputFile){
 		itemCount++;
 	    }
 	    if(id != 0){
-		if(DEBUG){
-		fprintf(stdout, "%u\t%u\n", *(unsigned int*)recordComplete, hashValue);
-		/*fprintf(stdout, "Error: %s:%d: Out of memory for ID = %u with hashValue = %u\n", __FILE__, __LINE__, *(unsigned int*)recordComplete, hashValue);*/
+		if(DEBUG > 0){
+		fprintf(stderr, "%u\t%u\n", *(unsigned int*)recordComplete, hashValue);
+		/*fprintf(stderr, "Error: %s:%d: Out of memory for ID = %u with hashValue = %u\n", __FILE__, __LINE__, *(unsigned int*)recordComplete, hashValue);*/
 		}
 		overflow++;
 		continue;
@@ -125,16 +125,16 @@ void PreprocessLSH(char* inputFile){
 	    if(DEBUG){
 		/*fprintf(stderr, "record ID=%u\t hashvalue=%u\t filenum=%u\t bucketposition=%u\t eleInBucket=%u\n", \
 			*(unsigned int*)recordComplete, hashValue, filenum, bucketPosition, itemCount);*/
-		fprintf(stderr, "%u\t %u\t %u\t %u\t %u\n", \
+		/*fprintf(stderr, "%u\t %u\t %u\t %u\t %u\n", \
 			*(unsigned int*)recordComplete, hashValue, filenum, bucketPosition, itemCount);
-		fflush(stderr);
+		fflush(stderr);*/
 	    }
 	    if(DEBUG){
 		fprintf(collisionLog, "%u\n", hashValue);
 	    }
 	}
     }
-    fprintf(stderr, "number of overflows = %u\n",overflow);
+    fprintf(stdout, "number of overflows = %u\n",overflow);
     fclose(fin);
     fclose(collisionLog);
     free(recordComplete);
@@ -188,11 +188,13 @@ unsigned int getBuckets(void* queryCompleteRecord, unsigned int* temp){
 	itemCount = 0;
 	while(itemCount < MAX_ITEM_PER_BUCKET){
 	    fread(&tempid, sizeof(unsigned int), 1, fp);
-	    if(tempid == queryID || tempid == 0)
+	    if(tempid == 0)
+		break;
+	    if(tempid == queryID)
 		continue;
 	    temp[sofar++] = tempid;
 	    if(sofar >= MAX_LOOKUP){
-		fprintf(stderr, "Max look up reached\n");
+		fprintf(stdout, "Max look up reached\n");
 		fclose(fp);
 		return sofar - 1;
 	    }
@@ -255,7 +257,7 @@ unsigned int KNN(char* inputfile, void* queryCompleteRecord, unsigned int* ans, 
 	exit(-1);
     }
     if(k > lookupCount){
-	fprintf(stderr, "I don't have that many elements in buckets where I'm hashed. Sorry, I can give only %u elements\n", lookupCount);
+	fprintf(stdout, "I don't have that many elements in buckets where I'm hashed. Sorry, I can give only %u elements\n", lookupCount);
 	k = lookupCount;
     }
     for(i = 0; i < k; i++){
