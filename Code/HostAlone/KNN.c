@@ -19,7 +19,7 @@ struct distRec
 void CreateHashTableFiles(){
     unsigned int i;
     FILE* fp;
-    char fname[4];
+    char fname[7];
     /* create files for buckets */
     void* ZERO_BUCKET;
     ZERO_BUCKET=malloc(MAX_ITEM_PER_BUCKET*sizeof(unsigned int));
@@ -57,7 +57,7 @@ void PreprocessLSH(char* inputFile){
     FILE* fin;
     FILE* hfile[8];
     void *recordComplete;
-    char fname[4];
+    char fname[7];
     unsigned int i, id;
     unsigned int hashValue, filenum, bucketPosition, itemCount;
     unsigned int overflow;
@@ -165,7 +165,7 @@ unsigned int getBuckets(void* queryCompleteRecord, unsigned int* temp){
     unsigned int itemCount;
     unsigned int sofar;
     unsigned int queryID;
-    char fname[4];
+    char fname[7];
     FILE *fp;
 
     queryID = *(unsigned int*)queryCompleteRecord;

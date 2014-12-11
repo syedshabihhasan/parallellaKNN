@@ -1,3 +1,11 @@
 \section{Approximate KNN using Locality Sensitive Hashing}
 \label{sec:lsh}
-On a very large dataset 
+$k$-nearest neighbor search problem is defined as follows:\\
+given a collection of $n$ datapoints, build a data structure which, given any query point, reports the $k$-nearest points to the query. 
+When the dimension is ``low'', there are several algorithms to perform this task (see~\cite{samet2006foundations}). 
+On the other hand for high dimensions, obtaining an exact solution might be expensive. 
+There are series of papers on computing ``approximate'' $k$-nearest neighbors. 
+In 1999, Aristides et al.~\cite{gionis1999similarity} proposed an approximation algorithm via hashing.
+The hashing scheme in this paper is referred as \emph{locality sensitive hashing} (LSH) and it enjoyed a lot of attention due its simplicity and efficiency. 
+After that there are several algorithms proposed based on variants of locality sensitive hashing (see a nice survey~\cite{andoni2006near}).
+The advantage of using 
