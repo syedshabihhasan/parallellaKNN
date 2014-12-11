@@ -10,7 +10,7 @@
 #include <ctype.h>
 #include "HashFunctions.h" 
 #include "KNN.h"
-#define MAX_RECORDS 997747 
+#define MAX_RECORDS 256 
 
 int main(int argc, char* args[]){
 
@@ -35,9 +35,8 @@ int main(int argc, char* args[]){
 	exit(-1);
     }
 
-    srandom(2);
     
-    
+    HashFunctionsInit(10); 
     /*system("rm -f *.hash");
     CreateHashTableFiles();
     if(DEBUG){
@@ -61,6 +60,7 @@ int main(int argc, char* args[]){
 	perror("fin in main");
 	exit(-1);
     }
+    srandom(2);
    while(1){
 	queryID = getRandomIndex(2, MAX_RECORDS-1);
 	fseek(fin, (queryID-1)*BYTES_PER_RECORD, SEEK_SET);

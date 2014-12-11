@@ -28,7 +28,7 @@ void CreateHashTableFiles(){
 	exit(-1);
     }
     memset(ZERO_BUCKET, 0, MAX_ITEM_PER_BUCKET*sizeof(unsigned int));
-    if(DEBUG){
+    if(DEBUG > 1){
 	for(i = 0; i < MAX_ITEM_PER_BUCKET; i++)
 	    fprintf(stderr, "%x\n", *(unsigned int*)(ZERO_BUCKET + i*(sizeof(unsigned int))));
 	fflush(stderr);
@@ -80,7 +80,7 @@ void PreprocessLSH(char* inputFile){
     for(i = 0; i < 8; i++){
 	memset(fname, '\0', 4);
 	sprintf(fname, "%u.hash", i);
-	hfile[i] = fopen(fname, "ab+");
+	hfile[i] = fopen(fname, "rb+");
 	if(hfile[i] == NULL){
 	    perror("hfile");
 	    exit(-1);
@@ -108,7 +108,8 @@ void PreprocessLSH(char* inputFile){
 		itemCount++;
 	    }
 	    if(id != 0){
-		fprintf(stdout, "Error: %s:%d: Out of memory for %u th item in a bucket\n", __FILE__, __LINE__, *(unsigned int*)recordComplete);
+		fprintf(stdout, "%u\t%u\n", *(unsigned int*)recordComplete, hashValue);
+		/*fprintf(stdout, "Error: %s:%d: Out of memory for ID = %u with hashValue = %u\n", __FILE__, __LINE__, *(unsigned int*)recordComplete, hashValue);*/
 		overflow++;
 		continue;
 	    }
@@ -119,8 +120,10 @@ void PreprocessLSH(char* inputFile){
 	    if(fwrite((unsigned int*)recordComplete, sizeof(unsigned int), 1, hfile[filenum]) != 1){
 		perror("fwrite");
 	    }
-	    if(DEBUG > 1){
-		fprintf(stderr, "record ID %u has hashvalue = %u put in filenum = %u and bucketposition = %u and this is the %u th element in this bucket\n", \
+	    if(DEBUG){
+		/*fprintf(stderr, "record ID=%u\t hashvalue=%u\t filenum=%u\t bucketposition=%u\t eleInBucket=%u\n", \
+			*(unsigned int*)recordComplete, hashValue, filenum, bucketPosition, itemCount);*/
+		fprintf(stderr, "%u\t %u\t %u\t %u\t %u\n", \
 			*(unsigned int*)recordComplete, hashValue, filenum, bucketPosition, itemCount);
 		fflush(stderr);
 	    }
@@ -239,7 +242,7 @@ unsigned int KNN(char* inputfile, void* queryCompleteRecord, unsigned int* ans, 
     }
 
     lookupCount = getBuckets(queryCompleteRecord, lookupBucket);
-    if(DEBUG){
+    if(DEBUG > 1){
 	fprintf(stderr, "%u lookups need to be done\n", lookupCount);
 	fflush(stderr);
     }
