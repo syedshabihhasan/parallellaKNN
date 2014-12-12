@@ -1,6 +1,6 @@
 \section{Conclusion}
-\label{sec: conclusion}
+\label{sec:conclusion}
 We presented a highly efficient KNN search system on the Parallella board using the million song dataset. 
 We were successful in reducing the dataset size by two orders of magnitude. 
 The employment of Locality Sensitive Hashing enabled us to reduce the number of comparisons by four orders of magnitude when compared to the the n\"{a}ive approach in theoretical analysis.
-We compared the performance of the Parallella board with a Macbook Air, and a Mac Pro. The board exceeded the computation speed of the Macbook Air by 58\% and on the high end Mac Pro by 21.22\%. This speed up is attained on the Parallella while consuming 18 times and 4 times less power than the Mac Pro and the Macbook Air.
+We compared the performance of the Parallella board with a Macbook Air, and a Mac Pro. The board exceeded the computation speed of the Macbook Air by 58\% and on the high end Mac Pro by 21.22\%. This speed up is attained on the Parallella while consuming 18 times and 4 times less power than the Mac Pro and the Macbook Air. Finally, we also compare the performance of a KNN search using LSH (table create over the full dataset) and observe that the Parallella is faster by a factor of atleast 2 than n\"{a}ive KNN on a substantially small dataset (5000 records). Although the communication of the DMA engine with the DRAM slows the data transfer down significantly any computation with large floating point operation might be able to achieve interesting results on the Parallella. Overall, through this project we gain insight into a very unique memory architecture (of the Parallella), understood the power of Locality Sensitive Hashing, and gained experience in low level memory constrained programming.

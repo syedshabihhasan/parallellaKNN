@@ -1,3 +1,32 @@
 \section{Background}
+\label{sec:background}
 \subsection{Hardware}
-\subsection{Locality Sensitive Hashing}
+The Parallella is a low-power Micro-computer with two main processing units -- a dual-core, 800 MHz ARM A9 (packaged within a System-on-Chip which also includes 1 GB of DDR3 RAM), and a 16-core RISC Epiphany coprocessor (running at 1 GHz).  The Parallella board, approximately 2” by 3.5”, is compact and runs on only 5-6 Watts of power, although it requires additional cooling.  Persistent storage is provided by a micro-SD card slot, and the board also has Gigabit Ethernet.
+
+The most interesting aspects of the board are the details of the connections between the main (“host”) CPU and the GPU-like Epiphany chip.  Each of the 16 cores on the Epiphany possesses a DMA controller with two channels, as well as 32 KB of local SRAM (for a total of 512 KB of SRAM on the entire chip).
+
+The DMA engine on each core is able to generate/sustain one double-word (8 byte) request per clock cycle, which in theory should result in an ability to transfer data (from somewhere to the core, or vice versa) at a rate of 8 GB/s.  However, when communicating with main DRAM, we were unable to achieve such throughputs; instead, our ARM-Epiphany buses topped out at 122 MB/s, which is approximately a 1-Gigabit connection (albeit with much lower latency than Gigabit Ethernet).  These DMA throughput numbers were tested using multiple active core configurations on two different boards, and were consistent.
+
+Unfortunately (for future Big Data research on this platform), this bus is not competitive with PCIe 3.0 x16 (a typical bus for CPU-GPU connections).  While the Parallella hardware is cheaper and uses less power; these advantages only exist by a factor of 8-10; thus, a cost-competitive Parallella solution, in comparison to a \$1000 graphics card, would only possess a memory-cores throughput of ~1.2 GB/s, in contrast to the 16 GB/s possible with PCIe.  In Big Data computing, data movement throughput is of paramount importance.  However, it is still possible that the Parallella platform could prove interesting for very floating-point-intensive workloads.
+\subsection{KNN via Locality Sensitive Hashing}
+$k$-nearest neighbor search problem is defined as follows:\\
+given a collection of $n$ datapoints, build a data structure which, given any query point, reports the $k$-nearest points to the query. 
+When the dimension is ``low'', there are several algorithms to perform this task (see~\cite{samet2006foundations}). 
+On the other hand for high dimensions, obtaining an exact solution might be expensive. 
+There are series of papers on computing ``approximate'' $k$-nearest neighbors. 
+In 1999, Aristides et al.~\cite{gionis1999similarity} proposed an approximation algorithm via hashing.
+The hashing scheme in this paper is referred as \emph{locality sensitive hashing} (LSH) and it enjoyed a lot of attention due its simplicity and efficiency. 
+After that there are several algorithms proposed based on variants of locality sensitive hashing (see a nice survey~\cite{andoni2006near}).
+The advantage of using LSH is that we don't have to compute distances to all points in the dataset once we have the preprocessed dataset. 
+
+Here we explain KNN using LSH. 
+We have $h_1, h_2, \ldots, h_\ell$ where $h_i: \mathbb{N} \to [0, W]$ is a hash function which returns a value in the range $0$ to $W$.
+In preprocessing phase, we apply these hash functions to each record and store the ID of the record to each hashed location. 
+That is, in the hash table, each record will appear $\ell$ times. 
+Since each hash function maps a record to a value in the range $[0, W]$, the hash table contains at most $W$ rows. 
+We restricted that each hash table row will contain at most $MR$ elements, hence the size of the hash table is $O(MR \cdot W)$ multiplied by space taken by a single record. 
+Once this data structure is created, we process queries. 
+For a query, we hash it with $\ell$ hash functions and retrieves the records in the corresponding rows from the hash table. 
+For each record retrieved we compute the distance to query and returns the $k$-nearest records. 
+
+

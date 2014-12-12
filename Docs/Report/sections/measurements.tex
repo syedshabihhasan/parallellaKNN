@@ -10,18 +10,18 @@ In order to quantify the performance of the Parallella board and our LSH based K
 \label{subsec:nknn_comptime}
 \begin{figure}
 \centering
-\begin{subfigure}[b]{0.45\textwidth}
+\begin{subfigure}[b]{0.3\textwidth}
 	\includegraphics[width=\textwidth]{gt_256.pdf}
 	\caption{256 records}
 	\label{fig:k256_comptime}
 \end{subfigure}
 ~
-\begin{subfigure}[b]{0.45\textwidth}
+\begin{subfigure}[b]{0.3\textwidth}
 	\includegraphics[width=\textwidth]{gt_1000.pdf}
 	\caption{1000 records}
 	\label{fig:k1000_comptime}
 \end{subfigure}
-\begin{subfigure}[b]{0.45\textwidth}
+\begin{subfigure}[b]{0.3\textwidth}
 	\includegraphics[width=\textwidth]{gt_5000.pdf}
 	\caption{5000 records}
 	\label{fig:k5000_comptime}
@@ -40,6 +40,15 @@ Finally, for 5000 record dataset (Figure \ref{fig:k5000_comptime}) we observe th
 
 \subsection{Locality Sensitive Hashing based K Nearest Neighbour Search}
 \label{subsec:lsh_knn_meas}
+\begin{figure}
+\centering
+\includegraphics[scale=0.5]{lsh_knn.pdf}
+\caption{LSH based KNN comparison}
+\label{fig: lsh_knn_fig}
+\end{figure}
+We measured the compared the computation time of the a KNN search of 5000 records using LSH where the hash table has been constructed using the full $10^6$ record dataset on the Parallella board with a n\"{a}ive KNN search over just 5000 records on the Macbook Air and the Mac Pro with K=10. We observe from the results recorded in Figure \ref{fig: lsh_knn_fig} that the LSH based technique searching over the complete dataset on a low-power device is faster by approximately 3 and 5 times to the Mac Pro and Macbook Air devices. This result serves as a testimonial to the speed up achieved by using LSH.
+
+\textbf{\underline{Result}}: \textit{Locality Sensitive Hashing based K Nearest Neighbour search, where the hashing table has been built over all $10^6$ records, is faster by a factor of 3 against the Mac Pro and a factor of 5 against the Macbook Air}.
 
 \subsection{Power consumption comparison}
 \label{subsec:power_cons_comp}
